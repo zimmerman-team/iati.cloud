@@ -1,19 +1,10 @@
-# Tastypie specific
-from tastypie.resources import ModelResource
-
-# cache specific
-from api.cache import NoTransformCache
-from iati.models import AidType
-from iati.models import Activity
-from cache.validator import Validator
-
-# Direct sql specific
-import ujson
 from django.db import connection
 from django.http import HttpResponse
 
-# Helpers
-from api.v3.resources.custom_call_helper import CustomCallHelper
+from iati.models import Activity
+from tastypie.resources import ModelResource
+import ujson
+
 
 class ActivityAggregatedAnyResource(ModelResource):
 
@@ -21,370 +12,280 @@ class ActivityAggregatedAnyResource(ModelResource):
         queryset = Activity.objects.none()
         resource_name = 'activity-aggregate-any'
         include_resource_uri = True
-        cache = NoTransformCache()
         allowed_methods = ['get']
 
+    def make_where_query(self, values, name):
+        query = ''
+        if values:
+            if not values[0]:
+                return None
 
-    def get_list(self, request, **kwargs):
+            for v in values:
+                query = '{query} {name} = "{v}" OR'.format(
+                    query=query, name=name, v=v)
+            query = query[:-2]
+        return query
 
-        # get group by and aggregation pars
-        group_by_key = request.GET.get('group_by', None)
-        aggregation_key = request.GET.get('aggregation_key', 'iati-identifier')
-        group_field = request.GET.get('group_field', 'start_actual')
-        query = request.GET.get('query', '')
+    def get_and_query(self, request, parameter, queryparameter):
 
-        if group_by_key in {'commitment', 'disbursement', 'incoming-fund'}:
-            group_field = 't.value_date'
+        filters = request.GET.get(parameter, '')
+        if filters:
+            query = self.make_where_query(
+                values=filters.split(','),
+                name=queryparameter)
+            query = '{query}'.format(query=query)
+        else:
+            query = ''
+        return query
 
-        aggregation_element_dict = {
-            'iati-identifier': {
-                'select': 'a.id',
-                'type': 'count',
-                'from_addition': ''},
-            'reporting-org': {
-                'select': 'a.reporting_organisation_id',
-                'type': 'count',
-                'from_addition': ''},
-            'title': {
-                'select': 't.title',
-                'type': 'count',
-                'from_addition': 'JOIN iati_title as t on a.id = t.activity_id '},
-            'description': {
-                'select': 'd.description',
-                'type': 'count',
-                'from_addition': 'JOIN iati_description as d on a.id = d.activity_id '},
-            'commitment': {
-                'select': 't.value',
-                'type': 'sum',
-                'from_addition': 'JOIN iati_transaction as t on a.id = t.activity_id ',
-                'where_addition': 'AND t.transaction_type_id = "C" '},
-            'disbursement': {
-                'select': 't.value',
-                'type': 'sum',
-                'from_addition': 'JOIN iati_transaction as t on a.id = t.activity_id ',
-                'where_addition': 'AND t.transaction_type_id = "D" '},
-            'expenditure': {
-                'select': 't.value',
-                'type': 'sum',
-                'from_addition': 'JOIN iati_transaction as t on a.id = t.activity_id ',
-                'where_addition': 'AND t.transaction_type_id = "E" '},
-            'incoming-fund': {
-                'select': 't.value',
-                'type': 'sum',
-                'from_addition': 'JOIN iati_transaction as t on a.id = t.activity_id ',
-                'where_addition': 'AND t.transaction_type_id = "IF" '},
-            'location': {
-                'select': 'l.activity_id',
-                'type': 'count',
-                'from_addition': 'JOIN iati_location as l on a.id = l.activity_id '},
-            'policy-marker': {
-                'select': 'pm.policy_marker_id',
-                'type': 'count',
-                'from_addition': 'JOIN iati_activitypolicymarker as pm on a.id = pm.activity_id '},
-            'total-budget': {
-                'select': 'a.total_budget',
-                'type': 'sum',
-                'from_addition': ''},
-        }
+    def get_filter_string(self, request, join_list):
 
-        group_by_element_dict = {
-            'recipient-country': {
-                'select': 'rc.country_id',
-                'from_addition': 'JOIN iati_activityrecipientcountry as rc on a.id = rc.activity_id '},
-            'recipient-region': {
-                'select': 'r.name, rr.region_id',
-                'from_addition': 'JOIN iati_activityrecipientregion as rr on a.id = rr.activity_id '
-                                 'join geodata_region as r on rr.region_id = r.code '},
-            'year': {
-                'select': 'YEAR('+group_field+')',
-                'from_addition': ''},
-            'sector': {
-                'select': 'acts.sector_id',
-                'from_addition': 'JOIN iati_activitysector as acts on a.id = acts.activity_id '},
-            'reporting-org': {
-                'select': 'a.reporting_organisation_id',
-                'from_addition': ''},
-            'participating-org': {
-                'select': 'po.name',
-                'from_addition': 'JOIN iati_activityparticipatingorganisation as po on a.id = po.activity_id '},
-            'policy-marker': {
-                'select': 'pm.policy_marker_id',
-                'from_addition': 'JOIN iati_activitypolicymarker as pm on a.id = pm.activity_id '},
-            'r.title': {
-                'select': 'r.title',
-                'from_addition': 'JOIN iati_result as r on a.id = r.activity_id ',
-                'where_addition': ' AND r.title = %(query)s '},
-        }
+        filter_list = []
 
-        helper = CustomCallHelper()
-        cursor = connection.cursor()
-
-        # get filters
-        reporting_organisations = helper.get_and_query(
+        reporting_organisations = self.get_and_query(
             request,
             'reporting_organisation__in',
             'a.reporting_organisation_id')
-        recipient_countries = helper.get_and_query(request, 'countries__in', 'rc.country_id')
-        recipient_regions = helper.get_and_query(request, 'regions__in', 'rr.region_id')
-        total_budgets = helper.get_and_query(request, 'total_budget__in', 'a.total_budget')
-        sectors = helper.get_and_query(request, 'sectors__in', 'acts.sector_id')
+        if reporting_organisations:
+            filter_list.append(reporting_organisations)
 
-        if aggregation_key in aggregation_element_dict:
-            aggregation_info = aggregation_element_dict[aggregation_key]
-            aggregation_key = aggregation_info["select"]
-            aggregation_type = aggregation_info["type"]
-            aggregation_from_addition = aggregation_info["from_addition"]
-            aggregation_where_addition = ""
-            if "where_addition" in aggregation_info:
-                aggregation_where_addition = aggregation_info["where_addition"]
-        else:
-            return HttpResponse(ujson.dumps({
-                "error": "Invalid aggregation key, see included list for viable keys.",
-                "valid_aggregation_keys": list(aggregation_element_dict.keys())}),
-                content_type='application/json')
+        recipient_countries = self.get_and_query(request, 'countries__in', 'rc.country_id')
+        if recipient_countries:
+            filter_list.append(recipient_countries)
+            join_list.append('countries')
 
-        if group_by_key in group_by_element_dict:
-            group_by_info = group_by_element_dict[group_by_key]
-            group_select = group_by_info["select"]
-            group_from_addition = group_by_info["from_addition"]
-            if "where_addition" in group_by_info and query:
-                aggregation_where_addition = aggregation_where_addition.join(group_by_info["where_addition"])
-        else:
-            return HttpResponse(ujson.dumps({
-                "error": "Invalid group by key, see included list for viable keys.",
-                "valid_group_by_keys": list(group_by_element_dict.keys())}),
-                content_type='application/json')
+        recipient_regions = self.get_and_query(request, 'regions__in', 'rr.region_id')
+        if recipient_regions:
+            filter_list.append(recipient_regions)
+            join_list.append('regions')
 
-        # make sure group key and aggregation key are set
-        if not group_by_key:
-            return HttpResponse(ujson.dumps(
-                "No field to group by. add parameter group_by (country/region/etc.. see docs)"),
-                content_type='application/json')
+        total_budgets = self.get_and_query(request, 'total_budget__in', 'a.total_budget')
+        if total_budgets:
+            filter_list.append(total_budgets)
 
-        if not aggregation_key:
-            return HttpResponse(ujson.dumps(
-                "No field to aggregate on. add parameter aggregation_key "),
-                content_type='application/json')
+        sectors = self.get_and_query(request, 'sectors__in', 'acts.sector_id')
+        if sectors:
+            filter_list.append(sectors)
+            join_list.append('sectors')
 
-        query_select = ''.join([
-            'SELECT ',
-            aggregation_type,
-            '(',
-            aggregation_key,
-            ') as aggregation_field, ',
-            group_select,
-            ' as group_field '])
+        activitystatuses = self.get_and_query(request, 'activity_status__in', 'acs.code')
+        if activitystatuses:
+            filter_list.append(activitystatuses)
+            join_list.append('activity-status')
 
-        query_from = ''.join([
+        filter_string = ') AND ('.join(filter_list)
+        if filter_string:
+            filter_string = 'AND (' + filter_string + ')'
+
+        return [filter_string, join_list]
+
+    def format_results(self, cursor):
+        desc = cursor.description
+        results = [
+            dict(zip([col[0] for col in desc], row))
+            for row in cursor.fetchall()
+        ]
+        return results
+
+    def create_join_string(self, join_list):
+
+        join_list = list(set(join_list))  # remove duplicates
+
+        join_map = {
+            'title': 'JOIN iati_title as t on a.id = t.activity_id',
+            'location': 'JOIN iati_location as l on a.id = l.activity_id',
+            'description': 'JOIN iati_description as d on a.id = d.activity_id',
+            'policy-marker': 'JOIN iati_activitypolicymarker as pm on a.id = pm.activity_id',
+            'transaction': 'JOIN iati_transaction as t on a.id = t.activity_id ',
+            'regions': 'JOIN iati_activityrecipientregion as rr on a.id = rr.activity_id JOIN geodata_region as r on rr.region_id = r.code ',
+            'sectors': 'JOIN iati_activitysector as acts on a.id = acts.activity_id JOIN iati_sector as s on acts.sector_id = s.code',
+            'result': 'JOIN iati_result as r on a.id = r.activity_id ',
+            'countries': 'JOIN iati_activityrecipientcountry as rc on a.id = rc.activity_id JOIN geodata_country as c on rc.country_id = c.code',
+            'participating-org': 'JOIN iati_activityparticipatingorganisation as po on a.id = po.activity_id JOIN iati_organisation as o on po.organisation_id = o.code',
+            'receiver-org': 'JOIN iati_organisation as o on t.receiver_organisation_id = o.code',
+            'activity-status': 'JOIN iati_activitystatus as acs on a.activity_status_id = acs.code'
+        }
+
+        joins = []
+
+        for join in join_list:
+            if join in join_map:
+                joins.append(join_map[join])
+
+        join_string = ''.join([
             'FROM iati_activity as a ',
-            aggregation_from_addition,
-            group_from_addition])
+            ' '.join(joins)])
 
-        query_where = ''.join([
-            'WHERE 1 ',
-            aggregation_where_addition])
-
-        query_group_by = ''.join([
-            'GROUP BY ',
-            group_select])
-
-        # fill where part
-        filter_string = ''.join([
-            'AND (',
-            reporting_organisations,
-            recipient_countries,
-            recipient_regions,
-            total_budgets,
-            sectors,
-            ')'])
-
-        if filter_string == 'AND ()':
-            filter_string = ""
-        elif 'AND ()' in filter_string:
-            filter_string = filter_string[:-6]
-
-        query_where += filter_string
-
-        if not filter_string and query_from == 'FROM iati_activity as a ':
-            if group_by_key == "country":
-                query_select = 'SELECT count(activity_id) as aggregation_field, country_id as group_field '
-                query_from = "FROM iati_activityrecipientcountry "
-                query_group_by = "GROUP BY country_id"
-
-            elif group_by_key == "region":
-                query_select = 'SELECT count(activity_id) as aggregation_field, region_id as group_field '
-                query_from = "FROM iati_activityrecipientregion "
-                query_group_by = "GROUP BY region_id"
-
-            elif group_by_key == "sector":
-                query_select = 'SELECT count(activity_id) as aggregation_field, sector_id as group_field '
-                query_from = "FROM iati_activitysector "
-                query_group_by = "GROUP BY sector_id"
-
-        cursor.execute(query_select + query_from + query_where + query_group_by, {"query": query, })
-        results1 = helper.get_fields(cursor=cursor)
-
-        options = []
-        for r in results1:
-            options.append(r)
-
-        return HttpResponse(ujson.dumps(options), content_type='application/json')
-
-
-
-
-
-
-
-
-
-
-
-
-
-class ActivityAggregatedAnyNamesResource(ModelResource):
-
-    class Meta:
-        #aid_type is used as dummy
-        queryset = AidType.objects.all()
-        resource_name = 'activity-aggregate-any-names'
-        include_resource_uri = True
-        cache = NoTransformCache()
-        allowed_methods = ['get']
-
+        return join_string
 
     def get_list(self, request, **kwargs):
 
-
         # get group by and aggregation pars
-        group_by_key = request.GET.get("group_by", None) # valid : country, region, year, sector, reporting org
-        aggregation_key = request.GET.get("aggregation_key", "iati-identifier")
-        group_field = request.GET.get("group_field", "start_actual") # used for year filtering, valid : start_planned, start_actual, end_planned, end_actual, defaults to start_actual
-        if group_by_key in {'commitment', 'disbursement', 'incoming-fund'}:
-            group_field = "t.value_date"
+        group_by_arr = request.GET.get('group_by', 'invalid_key').split(',')
+        aggregation_key = request.GET.get('aggregation_key', 'invalid_key')
+        query = request.GET.get('query', '')
+        order_by = request.GET.get('order_by', '')
+        limit = request.GET.get('limit', '')
 
-        aggregation_element_dict = {
-            'iati-identifier': {'select': 'a.id', 'type': 'count', 'from_addition': ''},
-            'reporting-org': {'select': 'a.reporting_organisation_id', 'type': 'count', 'from_addition': ''},
-            'title': {'select': 't.title', 'type': 'count', 'from_addition': 'JOIN iati_title as t on a.id = t.activity_id '},
-            'description': {'select': 'd.description', 'type': 'count', 'from_addition':'JOIN iati_description as d on a.id = d.activity_id '},
-            'commitment': {'select': 't.value', 'type': 'sum', 'from_addition': 'JOIN iati_transaction as t on a.id = t.activity_id ', 'where_addition': 'AND t.transaction_type_id = "C" '},
-            'disbursement': {'select': 't.value', 'type': 'sum', 'from_addition': 'JOIN iati_transaction as t on a.id = t.activity_id ', 'where_addition': 'AND t.transaction_type_id = "D" '},
-            'incoming-fund': {'select': 't.value', 'type': 'sum', 'from_addition': 'JOIN iati_transaction as t on a.id = t.activity_id ', 'where_addition': 'AND t.transaction_type_id = "IF" '},
-            'location': {'select': 'l.activity_id', 'type': 'count', 'from_addition': 'JOIN iati_location as l on a.id = l.activity_id '},
-            'policy-marker': {'select': 'pm.policy_marker_id', 'type': 'count', 'from_addition': 'JOIN iati_activitypolicymarker as pm on a.id = pm.activity_id '},
-            'total-budget': {'select': 'a.total_budget', 'type': 'sum', 'from_addition': ''},
-            # 'recipient-country': {'select': 'a.id', 'type': 'count', 'from_addition': ''},
-            # 'recipient-region': {'select': 'a.id', 'type': 'count', 'from_addition': ''},
-            # 'year': {'select': 'a.id', 'type': 'count', 'from_addition': ''},
-            # 'sector': {'select': 'a.id', 'type': 'count', 'from_addition': ''},
+        select_list = []
+        join_list = []
+        where_list = []
+        group_by_list = []
+
+        aggregation_dict = {
+            'iati-identifier': {
+                'select': 'count(a.id) as activity_count'},
+            'reporting-org': {
+                'select': 'count(a.reporting_organisation_id) as organisation_count'},
+            'title': {
+                'select': 'count(t.title)  as title_count',
+                'from_addition': ['title']},
+            'description': {
+                'select': 'count(d.description)  as description_count',
+                'from_addition': ['description']},
+            'commitment': {
+                'select': 'sum(t.value) as total_commitments',
+                'from_addition': ['transaction'],
+                'where_addition': 'AND t.transaction_type_id = "C" '},
+            'disbursement': {
+                'select': 'sum(t.value) as total_disbursements',
+                'from_addition': ['transaction'],
+                'where_addition': 'AND t.transaction_type_id = "D" '},
+            'expenditure': {
+                'select': 'sum(t.value) as total_expenditure',
+                'from_addition': ['transaction'],
+                'where_addition': 'AND t.transaction_type_id = "E" '},
+            'incoming-fund': {
+                'select': 'sum(t.value) as total_incoming_funds',
+                'from_addition': ['transaction'],
+                'where_addition': 'AND t.transaction_type_id = "IF" '},
+            'location': {
+                'select': 'count(l.activity_id) as location_count',
+                'from_addition': ['location']},
+            'policy-marker': {
+                'select': 'count(pm.policy_marker_id) as policy_marker_count'},
+            'total-budget': {
+                'select': 'sum(a.total_budget) as total_budget'},
         }
 
-        group_by_element_dict = {
-            'recipient-country': {'select': 'rc.country_id', 'from_addition': 'JOIN iati_activityrecipientcountry as rc on a.id = rc.activity_id '},
-            'recipient-region': {'select': 'rr.region_id', 'from_addition': 'JOIN iati_activityrecipientregion as rr on a.id = rr.activity_id '},
-            'year': {'select': 'YEAR('+group_field+')', 'from_addition': ''},
-            'sector': {'select': 'acts.sector_id', 'from_addition': 'JOIN iati_activitysector as acts on a.id = acts.activity_id '},
-            'reporting-org': {'select': 'a.reporting_organisation_id', 'from_addition': 'JOIN iati_organisation as o on a.reporting_organisation_id = o.code '},
-            'participating-org': {'select': 'po.name', 'from_addition': 'JOIN iati_activityparticipatingorganisation as po on a.id = po.activity_id '},
-            'policy-marker': {'select': 'pm.policy_marker_id', 'from_addition': 'JOIN iati_activitypolicymarker as pm on a.id = pm.activity_id '},
+        if aggregation_key in aggregation_dict:
+
+            select_list.append(aggregation_dict[aggregation_key]['select'])
+
+            if "from_addition" in aggregation_dict[aggregation_key]:
+                join_list.extend(aggregation_dict[aggregation_key]['from_addition'])
+
+            if "where_addition" in aggregation_dict[aggregation_key]:
+                where_list.append(aggregation_dict[aggregation_key]["where_addition"])
+        else:
+            return HttpResponse(ujson.dumps({
+                "error": "Invalid aggregation key, see included list for viable keys.",
+                "valid_aggregation_keys": list(aggregation_dict.keys())}),
+                content_type='application/json')
+
+        group_by_dict = {
+            'recipient-country': {
+                'select': 'rc.country_id, c.name',
+                'from_addition': ['countries']},
+            'recipient-country-name': {
+                'select': 'country.name',
+                'from_addition': ['countries']},
+            'recipient-region': {
+                'select': 'r.name, rr.region_id',
+                'from_addition': ['regions']},
+            'start_planned': {
+                'select': 'YEAR(start_planned) as start_planned_year',
+                'group_by': 'YEAR(start_planned)'},
+            'start_actual': {
+                'select': 'YEAR(start_actual) as start_actual_year',
+                'group_by': 'YEAR(start_actual)'},
+            'end_planned': {
+                'select': 'YEAR(end_planned) as end_planned_year',
+                'group_by': 'YEAR(end_planned)'},
+            'end_actual': {
+                'select': 'YEAR(end_actual) as end_actual_year',
+                'group_by': 'YEAR(end_actual)'},
+            'sector': {
+                'select': 'acts.sector_id, s.name',
+                'from_addition': ['sectors']},
+            'reporting-org': {
+                'select': 'a.reporting_organisation_id'},
+            'participating-org': {
+                'select': 'po.organisation_id, o.name',
+                'from_addition': ['participating-org']},
+            'policy-marker': {
+                'select': 'pm.policy_marker_id',
+                'from_addition': ['policy-marker']},
+            'r.title': {
+                'select': 'r.title',
+                'from_addition': ['result'],
+                'where_addition': ' AND r.title = %(query)s '},
+            'transaction_date_year': {
+                'select': 'YEAR(t.transaction_date) as transaction_date_year',
+                'from_addition': ['transaction'],
+                'group_by': 'YEAR(t.transaction_date)'
+            },
+            'activity-status': {
+                'select': 'acs.code, acs.name',
+                'from_addition': ['activity-status'],
+                'group_by': 'a.activity_status_id'
+            },
+            'transaction-receiver-org': {
+                'select': 't.receiver_organisation_id, o.name',
+                'from_addition': ['transaction', 'receiver-org'],
+                'group_by': 't.receiver_organisation_id'
+            },
         }
 
-        # check if call is cached using validator.is_cached
-        # check if call contains flush, if it does the call comes from the cache updater and shouldn't return cached results
-        validator = Validator()
-        cururl = request.META['PATH_INFO'] + "?" + request.META['QUERY_STRING']
+        for group_by_key in group_by_arr:
+            if group_by_key in group_by_dict:
 
-        if not 'flush' in cururl and validator.is_cached(cururl):
-            return HttpResponse(validator.get_cached_call(cururl), content_type='application/json')
+                select_list.append(group_by_dict[group_by_key]['select'])
 
-        helper = CustomCallHelper()
+                if 'group_by' in group_by_dict[group_by_key]:
+                    group_by_list.append(group_by_dict[group_by_key]['group_by'])
+                else:
+                    group_by_list.append(group_by_dict[group_by_key]['select'])
+
+                if "from_addition" in group_by_dict[group_by_key]:
+                    join_list.extend(group_by_dict[group_by_key]['from_addition'])
+
+                if 'where_addition' in group_by_dict[group_by_key] and query:
+                    where_list.append(group_by_dict[group_by_key]['where_addition'])
+            else:
+                return HttpResponse(ujson.dumps({
+                    "error": "Invalid group by key, see included list for viable keys.",
+                    "valid_group_by_keys": list(group_by_dict.keys())}),
+                    content_type='application/json')
+
+        query_where = 'WHERE 1 ' + ' '.join(where_list)
+        extra_where_and_join = self.get_filter_string(request, join_list)
+        query_where += extra_where_and_join[0] + ' '
+        join_list.extend(extra_where_and_join[1])
+
+        query_select = 'SELECT ' + ', '.join(select_list) + ' '
+
+        query_from = self.create_join_string(join_list) + ' '
+
+        query_group_by = ''.join([
+            'GROUP BY ',
+            ','.join(group_by_list),
+            ' '])
+
+
+        if order_by:
+            if '-' in order_by:
+                order_by = 'ORDER BY ' + order_by[1:] + ' DESC '
+            else:
+                order_by = 'ORDER BY ' + order_by + ' ASC '
+
+        if limit:
+            limit = 'LIMIT ' + str(limit)
+
+        print query_select + query_from + query_where + query_group_by + order_by + limit
+
         cursor = connection.cursor()
+        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit, {"query": query, })
+        results = self.format_results(cursor=cursor)
 
-
-        # get filters
-        reporting_organisations = helper.get_and_query(request, 'reporting_organisation__in', 'a.reporting_organisation_id')
-        recipient_countries = helper.get_and_query(request, 'countries__in', 'rc.country_id')
-        recipient_regions = helper.get_and_query(request, 'regions__in', 'rr.region_id')
-        total_budgets = helper.get_and_query(request, 'total_budget__in', 'a.total_budget')
-        sectors = helper.get_and_query(request, 'sectors__in', 'acts.sector_id')
-
-
-
-
-
-        if aggregation_key in aggregation_element_dict:
-            aggregation_info = aggregation_element_dict[aggregation_key]
-            aggregation_key = aggregation_info["select"]
-            aggregation_type = aggregation_info["type"]
-            aggregation_from_addition = aggregation_info["from_addition"]
-            aggregation_where_addition = ""
-            if "where_addition" in aggregation_info:
-                aggregation_where_addition = aggregation_info["where_addition"]
-        else:
-
-            return HttpResponse(ujson.dumps({"error": "Invalid aggregation key, see included list for viable keys.","valid_aggregation_keys": list(aggregation_element_dict.keys())}), content_type='application/json')
-
-        if group_by_key in group_by_element_dict:
-            group_by_info = group_by_element_dict[group_by_key]
-            group_select = group_by_info["select"]
-            group_from_addition = group_by_info["from_addition"]
-        else:
-            return HttpResponse(ujson.dumps({"error": "Invalid group by key, see included list for viable keys.","valid_group_by_keys": list(group_by_element_dict.keys())}), content_type='application/json')
-
-        # make sure group key and aggregation key are set
-        if not group_by_key:
-            return HttpResponse(ujson.dumps("No field to group by. add parameter group_by (country/region/etc.. see docs)"), content_type='application/json')
-        if not aggregation_key:
-            return HttpResponse(ujson.dumps("No field to aggregate on. add parameter aggregation_key (iati-identifier/reporting-org/etc.. see docs)"), content_type='application/json')
-
-        #create the query
-        query_select = 'SELECT '+aggregation_type+'(' + aggregation_key + ') as aggregation_field, ' + group_select + ' as group_field, o.name   as org_name '
-        query_from = 'FROM iati_activity as a ' + aggregation_from_addition + group_from_addition
-        query_where = 'WHERE 1 ' + aggregation_where_addition
-        query_group_by = 'GROUP BY ' + group_select
-
-        # fill where part
-        filter_string = 'AND (' + reporting_organisations + recipient_countries + recipient_regions + total_budgets + sectors + ')'
-        if filter_string == 'AND ()':
-            filter_string = ""
-        else:
-            if 'AND ()' in filter_string:
-                filter_string = filter_string[:-6]
-
-        query_where += filter_string
-
-        # optimalisation for simple (all) queries
-        if not filter_string and query_from == 'FROM iati_activity as a ':
-            if(group_by_key == "country"):
-                query_select = 'SELECT count(activity_id) as aggregation_field, country_id as group_field '
-                query_from = "FROM iati_activityrecipientcountry "
-                query_group_by = "GROUP BY country_id"
-
-            elif(group_by_key == "region"):
-                query_select = 'SELECT count(activity_id) as aggregation_field, region_id as group_field '
-                query_from = "FROM iati_activityrecipientregion "
-                query_group_by = "GROUP BY region_id"
-
-            elif(group_by_key == "sector"):
-                query_select = 'SELECT count(activity_id) as aggregation_field, sector_id as group_field '
-                query_from = "FROM iati_activitysector "
-                query_group_by = "GROUP BY sector_id"
-
-        # execute query
-
-
-        cursor.execute(query_select + query_from + query_where + query_group_by)
-        results1 = helper.get_fields(cursor=cursor)
-
-        # query result -> json output
-
-        options = {}
-
-        for r in results1:
-
-            options[r['group_field']] = [r['aggregation_field'], r['org_name']]
-
-
-
-        return HttpResponse(ujson.dumps(options), content_type='application/json')
+        return HttpResponse(ujson.dumps(results), content_type='application/json')
