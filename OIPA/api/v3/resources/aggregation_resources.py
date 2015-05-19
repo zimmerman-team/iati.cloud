@@ -41,37 +41,83 @@ class ActivityAggregatedAnyResource(ModelResource):
     def get_filter_string(self, request, join_list):
 
         filter_list = []
+        filters = [
+            {
+                'parameter_name': 'reporting_organisation__in',
+                'filter_name': 'a.reporting_organisation_id',
+                'from_addition': []},
+            {
+                'parameter_name': 'countries__in',
+                'filter_name': 'rc.country_id',
+                'from_addition': ['countries']},
+            {
+                'parameter_name': 'regions__in',
+                'filter_name': 'rr.region_id',
+                'from_addition': ['regions']},
+            {
+                'parameter_name': 'total_budget__in',
+                'filter_name': 'a.total_budget',
+                'from_addition': ['countries']},
+            {
+                'parameter_name': 'sectors__in',
+                'filter_name': 'acts.sector_id',
+                'from_addition': ['sectors']},
+            {
+                'parameter_name': 'activity_status__in',
+                'filter_name': 'acs.code',
+                'from_addition': ['activity-status']},
+            {
+                'parameter_name': 'participating_organisation__in',
+                'filter_name': 'po.organisation_id',
+                'from_addition': ['participating-org']},
+            {
+                'parameter_name': 'transaction__receiver_organisation__in',
+                'filter_name': 't.receiver_organisation_id',
+                'from_addition': ['transaction']},
+            {
+                'parameter_name': 'start_planned_year',
+                'filter_name': 'YEAR(start_planned)',
+                'from_addition': []},
+            {
+                'parameter_name': 'start_actual_year',
+                'filter_name': 'YEAR(start_actual)',
+                'from_addition': []},
+            {
+                'parameter_name': 'end_planned_year',
+                'filter_name': 'YEAR(end_planned)',
+                'from_addition': []},
+            {
+                'parameter_name': 'end_actual_year',
+                'filter_name': 'YEAR(end_actual)',
+                'from_addition': []},
+            {
+                'parameter_name': 'total_budget_lt',
+                'filter_name': 'a.total_budget',
+                'type': '<',
+                'from_addition': []},
+            {
+                'parameter_name': 'total_budget_gt',
+                'filter_name': 'a.total_budget',
+                'type': '>',
+                'from_addition': []},
+            {
+                'parameter_name': 'policy_marker__in',
+                'filter_name': 'pm.policy_marker_id',
+                'from_addition': ['policy-marker']},
+        ]
 
-        reporting_organisations = self.get_and_query(
-            request,
-            'reporting_organisation__in',
-            'a.reporting_organisation_id')
-        if reporting_organisations:
-            filter_list.append(reporting_organisations)
+        for filter_item in filters:
+            filter_list_item = self.get_and_query(
+                request,
+                filter_item['parameter_name'],
+                filter_item['filter_name'])
+            if filter_list_item != '':
 
-        recipient_countries = self.get_and_query(request, 'countries__in', 'rc.country_id')
-        if recipient_countries:
-            filter_list.append(recipient_countries)
-            join_list.append('countries')
+                if 'type' in filter_item:
+                    filter_list_item = filter_list_item.replace("=", filter_item['type'], 1)
 
-        recipient_regions = self.get_and_query(request, 'regions__in', 'rr.region_id')
-        if recipient_regions:
-            filter_list.append(recipient_regions)
-            join_list.append('regions')
-
-        total_budgets = self.get_and_query(request, 'total_budget__in', 'a.total_budget')
-        if total_budgets:
-            filter_list.append(total_budgets)
-
-        sectors = self.get_and_query(request, 'sectors__in', 'acts.sector_id')
-        if sectors:
-            filter_list.append(sectors)
-            join_list.append('sectors')
-
-        activitystatuses = self.get_and_query(request, 'activity_status__in', 'acs.code')
-        if activitystatuses:
-            filter_list.append(activitystatuses)
-            join_list.append('activity-status')
+                filter_list.append(filter_list_item)
+                join_list.extend(filter_item['from_addition'])
 
         filter_string = ') AND ('.join(filter_list)
         if filter_string:
@@ -96,10 +142,11 @@ class ActivityAggregatedAnyResource(ModelResource):
             'location': 'JOIN iati_location as l on a.id = l.activity_id',
             'description': 'JOIN iati_description as d on a.id = d.activity_id',
             'policy-marker': 'JOIN iati_activitypolicymarker as pm on a.id = pm.activity_id',
-            'transaction': 'JOIN iati_transaction as t on a.id = t.activity_id ',
-            'regions': 'JOIN iati_activityrecipientregion as rr on a.id = rr.activity_id JOIN geodata_region as r on rr.region_id = r.code ',
+            'policy-marker-significance': 'JOIN iati_policysignificance as pms on pm.policy_significance_id = pms.code',
+            'transaction': 'JOIN iati_transaction as t on a.id = t.activity_id',
+            'regions': 'JOIN iati_activityrecipientregion as rr on a.id = rr.activity_id JOIN geodata_region as r on rr.region_id = r.code',
             'sectors': 'JOIN iati_activitysector as acts on a.id = acts.activity_id JOIN iati_sector as s on acts.sector_id = s.code',
-            'result': 'JOIN iati_result as r on a.id = r.activity_id ',
+            'result': 'JOIN iati_result as r on a.id = r.activity_id',
             'countries': 'JOIN iati_activityrecipientcountry as rc on a.id = rc.activity_id JOIN geodata_country as c on rc.country_id = c.code',
             'participating-org': 'JOIN iati_activityparticipatingorganisation as po on a.id = po.activity_id JOIN iati_organisation as o on po.organisation_id = o.code',
             'receiver-org': 'JOIN iati_organisation as o on t.receiver_organisation_id = o.code',
@@ -131,6 +178,12 @@ class ActivityAggregatedAnyResource(ModelResource):
         join_list = []
         where_list = []
         group_by_list = []
+
+        # TO DO: Clean this
+        extra_select = request.GET.get('extra_select', '')
+        if extra_select:
+            select_list.append(extra_select)
+
 
         aggregation_dict = {
             'iati-identifier': {
@@ -187,9 +240,10 @@ class ActivityAggregatedAnyResource(ModelResource):
             'recipient-country': {
                 'select': 'rc.country_id, c.name',
                 'from_addition': ['countries']},
-            'recipient-country-name': {
-                'select': 'country.name',
-                'from_addition': ['countries']},
+            'recipient-country-geo': {
+                'select': 'rc.country_id, c.name, AsText(c.center_longlat) as location',
+                'from_addition': ['countries'],
+                'group_by': 'rc.country_id, c.name'},
             'recipient-region': {
                 'select': 'r.name, rr.region_id',
                 'from_addition': ['regions']},
@@ -235,6 +289,11 @@ class ActivityAggregatedAnyResource(ModelResource):
                 'from_addition': ['transaction', 'receiver-org'],
                 'group_by': 't.receiver_organisation_id'
             },
+            'policy-marker-significance': {
+                'select': 'pm.policy_marker_id, pm.policy_significance_id',
+                'from_addition': ['policy-marker'],
+                'group_by': 'pm.policy_marker_id, pm.policy_significance_id'
+            },
         }
 
         for group_by_key in group_by_arr:
@@ -274,7 +333,7 @@ class ActivityAggregatedAnyResource(ModelResource):
 
 
         if order_by:
-            if '-' in order_by:
+            if order_by[:1] == '-':
                 order_by = 'ORDER BY ' + order_by[1:] + ' DESC '
             else:
                 order_by = 'ORDER BY ' + order_by + ' ASC '
