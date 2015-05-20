@@ -63,7 +63,8 @@ class ActivityListResource(ActivityResource):
             'reporting_organisation': ('exact', 'in'),
             'participating_organisation': ALL,
             'participating_organisations': ALL_WITH_RELATIONS,
-            'results': ALL_WITH_RELATIONS
+            'results': ALL_WITH_RELATIONS,
+            'activity_status': ALL_WITH_RELATIONS
         }
         cache = NoTransformCache()
         allowed_methods = ['get']

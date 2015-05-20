@@ -71,6 +71,10 @@ class ActivityAggregatedAnyResource(ModelResource):
                 'filter_name': 'po.organisation_id',
                 'from_addition': ['participating-org']},
             {
+                'parameter_name': 'participating_organisations__organisation__code__in',
+                'filter_name': 'po.organisation_id',
+                'from_addition': ['participating-org']},
+            {
                 'parameter_name': 'transaction__receiver_organisation__in',
                 'filter_name': 't.receiver_organisation_id',
                 'from_addition': ['transaction']},
