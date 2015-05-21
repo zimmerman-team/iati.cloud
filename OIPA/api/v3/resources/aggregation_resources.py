@@ -153,7 +153,7 @@ class ActivityAggregatedAnyResource(ModelResource):
             'result': 'JOIN iati_result as r on a.id = r.activity_id',
             'countries': 'JOIN iati_activityrecipientcountry as rc on a.id = rc.activity_id JOIN geodata_country as c on rc.country_id = c.code',
             'participating-org': 'JOIN iati_activityparticipatingorganisation as po on a.id = po.activity_id JOIN iati_organisation as o on po.organisation_id = o.code',
-            'receiver-org': 'JOIN iati_organisation as o on t.receiver_organisation_id = o.code',
+            'receiver-org': 'JOIN iati_organisation as rpo on t.receiver_organisation_id = rpo.code',
             'activity-status': 'JOIN iati_activitystatus as acs on a.activity_status_id = acs.code'
         }
 
@@ -289,7 +289,7 @@ class ActivityAggregatedAnyResource(ModelResource):
                 'group_by': 'a.activity_status_id'
             },
             'transaction-receiver-org': {
-                'select': 't.receiver_organisation_id, o.name',
+                'select': 't.receiver_organisation_id, rpo.name',
                 'from_addition': ['transaction', 'receiver-org'],
                 'group_by': 't.receiver_organisation_id'
             },
