@@ -125,7 +125,7 @@ class ActivityAggregatedAnyResource(ModelResource):
 
 
         #search
-        q = request.GET.get('q', '')
+        q = request.GET.get('query', '')
         if q:
             q_string = ''.join([
                 "(MATCH (asd.`search_title`) AGAINST ('+",
@@ -195,7 +195,7 @@ class ActivityAggregatedAnyResource(ModelResource):
         # get group by and aggregation pars
         group_by_arr = request.GET.get('group_by', 'invalid_key').split(',')
         aggregation_key = request.GET.get('aggregation_key', 'invalid_key')
-        query = request.GET.get('query', '')
+        result_query = request.GET.get('result_query', '')
         order_by = request.GET.get('order_by', '')
         limit = request.GET.get('limit', '')
 
@@ -298,7 +298,7 @@ class ActivityAggregatedAnyResource(ModelResource):
             'r.title': {
                 'select': 'r.title',
                 'from_addition': ['result'],
-                'where_addition': ' AND r.title = %(query)s '},
+                'where_addition': ' AND r.title = %(result_query)s '},
             'transaction_date_year': {
                 'select': 'YEAR(t.transaction_date) as transaction_date_year',
                 'from_addition': ['transaction'],
@@ -374,7 +374,7 @@ class ActivityAggregatedAnyResource(ModelResource):
         print query_select + query_from + query_where + query_group_by + order_by + limit
 
         cursor = connection.cursor()
-        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit, {"query": query, })
+        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit, {"result_query": result_query, })
         results = self.format_results(cursor=cursor)
 
         return HttpResponse(ujson.dumps(results), content_type='application/json')
