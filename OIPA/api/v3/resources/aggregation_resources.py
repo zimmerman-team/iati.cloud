@@ -123,6 +123,26 @@ class ActivityAggregatedAnyResource(ModelResource):
                 filter_list.append(filter_list_item)
                 join_list.extend(filter_item['from_addition'])
 
+
+        #search
+        q = request.GET.get('q', '')
+        if q:
+            q_string = ''.join([
+                "(MATCH (asd.`search_title`) AGAINST ('+",
+                q,
+                "*' IN BOOLEAN MODE) ",
+                "OR MATCH (asd.`search_description`) AGAINST ('+",
+                q,
+                "*' IN BOOLEAN MODE) ",
+                "OR asd.`search_identifier` = '",
+                q,
+                "') ",
+            ])
+
+            filter_list.append(q_string)
+            join_list.extend(['activity-search-data'])
+
+
         filter_string = ') AND ('.join(filter_list)
         if filter_string:
             filter_string = 'AND (' + filter_string + ')'
@@ -154,7 +174,8 @@ class ActivityAggregatedAnyResource(ModelResource):
             'countries': 'JOIN iati_activityrecipientcountry as rc on a.id = rc.activity_id JOIN geodata_country as c on rc.country_id = c.code',
             'participating-org': 'JOIN iati_activityparticipatingorganisation as po on a.id = po.activity_id JOIN iati_organisation as o on po.organisation_id = o.code',
             'receiver-org': 'JOIN iati_organisation as rpo on t.receiver_organisation_id = rpo.code',
-            'activity-status': 'JOIN iati_activitystatus as acs on a.activity_status_id = acs.code'
+            'activity-status': 'JOIN iati_activitystatus as acs on a.activity_status_id = acs.code',
+            'activity-search-data': 'JOIN iati_activitysearchdata as asd on a.id = asd.activity_id'
         }
 
         joins = []
@@ -321,9 +342,12 @@ class ActivityAggregatedAnyResource(ModelResource):
                     "valid_group_by_keys": list(group_by_dict.keys())}),
                     content_type='application/json')
 
+
         query_where = 'WHERE 1 ' + ' '.join(where_list)
         extra_where_and_join = self.get_filter_string(request, join_list)
         query_where += extra_where_and_join[0] + ' '
+
+
         join_list.extend(extra_where_and_join[1])
 
         query_select = 'SELECT ' + ', '.join(select_list) + ' '
@@ -334,6 +358,8 @@ class ActivityAggregatedAnyResource(ModelResource):
             'GROUP BY ',
             ','.join(group_by_list),
             ' '])
+
+
 
 
         if order_by:
