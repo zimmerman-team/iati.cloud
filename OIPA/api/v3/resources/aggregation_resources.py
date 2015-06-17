@@ -272,6 +272,10 @@ class ActivityAggregatedAnyResource(ModelResource):
             'recipient-region': {
                 'select': 'r.name, rr.region_id',
                 'from_addition': ['regions']},
+            'recipient-region-geo': {
+                'select': 'r.name, rr.region_id, AsText(r.center_longlat) as location',
+                'from_addition': ['regions'],
+                'group_by': 'rr.region_id, r.name'},
             'start_planned': {
                 'select': 'YEAR(start_planned) as start_planned_year',
                 'group_by': 'YEAR(start_planned)'},
