@@ -6,11 +6,11 @@ from tastypie.resources import ModelResource
 import ujson
 
 
-class ActivityAggregatedAnyResource(ModelResource):
+class ActivityAggregateResource(ModelResource):
 
     class Meta:
         queryset = Activity.objects.none()
-        resource_name = 'activity-aggregate-any'
+        resource_name = 'activity-aggregate'
         include_resource_uri = True
         allowed_methods = ['get']
 
@@ -108,6 +108,16 @@ class ActivityAggregatedAnyResource(ModelResource):
                 'parameter_name': 'policy_marker__in',
                 'filter_name': 'pm.policy_marker_id',
                 'from_addition': ['policy-marker']},
+            {
+                'parameter_name': 'document_link__gt',
+                'filter_name': 'dl.id',
+                'from_addition': ['document-link'],
+                'type': '>'},
+            {
+                'parameter_name': 'result__gt',
+                'filter_name': 'r.id',
+                'from_addition': ['result'],
+                'type': '>'},
         ]
 
         for filter_item in filters:
@@ -175,7 +185,9 @@ class ActivityAggregatedAnyResource(ModelResource):
             'participating-org': 'JOIN iati_activityparticipatingorganisation as po on a.id = po.activity_id JOIN iati_organisation as o on po.organisation_id = o.code',
             'receiver-org': 'JOIN iati_organisation as rpo on t.receiver_organisation_id = rpo.code',
             'activity-status': 'JOIN iati_activitystatus as acs on a.activity_status_id = acs.code',
-            'activity-search-data': 'JOIN iati_activitysearchdata as asd on a.id = asd.activity_id'
+            'activity-search-data': 'JOIN iati_activitysearchdata as asd on a.id = asd.activity_id',
+            'document-link': 'JOIN iati_documentlink as dl on a.id = dl.activity_id',
+
         }
 
         joins = []

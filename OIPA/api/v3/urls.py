@@ -21,7 +21,7 @@ from api.v3.resources.sql_resources import GlobalActivitiesResource
 from api.v3.resources.sql_resources import DonorActivitiesResource
 from api.v3.resources.sql_resources import SectorActivitiesResource
 from api.v3.resources.sql_resources import ActivityFilterOptionsUnescoResource
-from api.v3.resources.aggregation_resources import ActivityAggregatedAnyResource
+from api.v3.resources.aggregation_resources import ActivityAggregateResource
 from api.v3.resources.indicator_resources import IndicatorFilterOptionsResource
 from api.v3.resources.indicator_data_resource import IndicatorDataResource
 from api.v3.resources.unesco_indicator_resources import UnescoIndicatorResource
@@ -29,6 +29,7 @@ from api.v3 import views
 
 v3_api = Api(api_name='v3')
 v3_api.register(OrganisationResource())
+v3_api.register(ActivityAggregateResource())
 v3_api.register(ActivityResource())
 v3_api.register(ActivityListResource())
 v3_api.register(ActivityFilterOptionsResource())
@@ -42,7 +43,6 @@ v3_api.register(OnlyRegionResource())
 v3_api.register(RecipientCountryResource())
 v3_api.register(CountryGeojsonResource())
 v3_api.register(CountryActivitiesResource())
-v3_api.register(ActivityAggregatedAnyResource())
 v3_api.register(IndicatorFilterOptionsResource())
 v3_api.register(IndicatorDataResource())
 v3_api.register(RegionActivitiesResource())
