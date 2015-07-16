@@ -10,7 +10,7 @@ class ActivityAggregateResource(ModelResource):
 
     class Meta:
         queryset = Activity.objects.none()
-        resource_name = 'activity-aggregate'
+        resource_name = 'aggregate'
         include_resource_uri = True
         allowed_methods = ['get']
 
