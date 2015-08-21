@@ -118,7 +118,18 @@ class ActivityAggregateResource(ModelResource):
                 'filter_name': 'r.id',
                 'from_addition': ['result'],
                 'type': '>'},
+            {
+                'parameter_name': 'budget__period_start',
+                'filter_name': 'bud.period_start',
+                'from_addition': ['result'],
+                'type': '>'},
+            {
+                'parameter_name': 'budget__period_end',
+                'filter_name': 'bud.period_end',
+                'from_addition': ['result'],
+                'type': '>'},
         ]
+
 
         for filter_item in filters:
             filter_list_item = self.get_and_query(
@@ -187,7 +198,7 @@ class ActivityAggregateResource(ModelResource):
             'activity-status': 'JOIN iati_activitystatus as acs on a.activity_status_id = acs.code',
             'activity-search-data': 'JOIN iati_activitysearchdata as asd on a.id = asd.activity_id',
             'document-link': 'JOIN iati_documentlink as dl on a.id = dl.activity_id',
-
+            'budget': 'JOIN iati_budget as bud on a.id = bud.activity_id',
         }
 
         joins = []
@@ -208,6 +219,7 @@ class ActivityAggregateResource(ModelResource):
         group_by_arr = request.GET.get('group_by', 'invalid_key').split(',')
         aggregation_key = request.GET.get('aggregation_key', 'invalid_key')
         result_query = request.GET.get('result_query', '')
+        name_query = request.GET.get('name_query', '')
         order_by = request.GET.get('order_by', '')
         limit = request.GET.get('limit', '')
 
@@ -256,6 +268,9 @@ class ActivityAggregateResource(ModelResource):
                 'select': 'count(pm.policy_marker_id) as policy_marker_count'},
             'total-budget': {
                 'select': 'sum(a.total_budget) as total_budget'},
+            'budget__value': {
+                'select': 'sum(bud.value) as budget__value',
+                'from_addition': ['budget']},
         }
 
         if aggregation_key in aggregation_dict:
@@ -275,47 +290,45 @@ class ActivityAggregateResource(ModelResource):
 
         group_by_dict = {
             'recipient-country': {
-                'select': 'rc.country_id, c.name',
-                'from_addition': ['countries']},
-            'recipient-country-geo': {
                 'select': 'rc.country_id, c.name, AsText(c.center_longlat) as location',
                 'from_addition': ['countries'],
-                'group_by': 'rc.country_id, c.name'},
+                'group_by': 'rc.country_id',
+                'where_search_addition': 'AND c.name like %(name_query)s '},
             'recipient-region': {
-                'select': 'r.name, rr.region_id',
-                'from_addition': ['regions']},
-            'recipient-region-geo': {
                 'select': 'r.name, rr.region_id, AsText(r.center_longlat) as location',
                 'from_addition': ['regions'],
-                'group_by': 'rr.region_id, r.name'},
-            'start_planned': {
+                'group_by': 'rr.region_id',
+                'where_search_addition': 'AND r.name like %(name_query)s '},
+            'activity-date__start_planned': {
                 'select': 'YEAR(start_planned) as start_planned_year',
                 'group_by': 'YEAR(start_planned)'},
-            'start_actual': {
+            'activity-date__start_actual': {
                 'select': 'YEAR(start_actual) as start_actual_year',
                 'group_by': 'YEAR(start_actual)'},
-            'end_planned': {
+            'activity-date__end-planned': {
                 'select': 'YEAR(end_planned) as end_planned_year',
                 'group_by': 'YEAR(end_planned)'},
-            'end_actual': {
+            'activity-date__end-actual': {
                 'select': 'YEAR(end_actual) as end_actual_year',
                 'group_by': 'YEAR(end_actual)'},
             'sector': {
                 'select': 'acts.sector_id, s.name',
-                'from_addition': ['sectors']},
+                'from_addition': ['sectors'],
+                'where_search_addition': 'AND s.name like %(name_query)s '},
             'reporting-org': {
                 'select': 'a.reporting_organisation_id'},
             'participating-org': {
                 'select': 'po.organisation_id, o.name',
-                'from_addition': ['participating-org']},
+                'from_addition': ['participating-org'],
+                'where_search_addition': 'AND o.name like %(name_query)s '},
             'policy-marker': {
                 'select': 'pm.policy_marker_id',
                 'from_addition': ['policy-marker']},
-            'r.title': {
+            'result__title': {
                 'select': 'r.title',
                 'from_addition': ['result'],
                 'where_addition': ' AND r.title = %(result_query)s '},
-            'transaction_date_year': {
+            'transaction__transaction-date_year': {
                 'select': 'YEAR(t.transaction_date) as transaction_date_year',
                 'from_addition': ['transaction'],
                 'group_by': 'YEAR(t.transaction_date)'
@@ -325,16 +338,26 @@ class ActivityAggregateResource(ModelResource):
                 'from_addition': ['activity-status'],
                 'group_by': 'a.activity_status_id'
             },
-            'transaction-receiver-org': {
+            'transaction__receiver-org': {
                 'select': 't.receiver_organisation_id, rpo.name',
                 'from_addition': ['transaction', 'receiver-org'],
-                'group_by': 't.receiver_organisation_id'
+                'group_by': 't.receiver_organisation_id',
+                'where_search_addition': 'AND rpo.name like %(name_query)s '
             },
-            'policy-marker-significance': {
+            'policy_marker__significance': {
                 'select': 'pm.policy_marker_id, pm.policy_significance_id',
                 'from_addition': ['policy-marker'],
                 'group_by': 'pm.policy_marker_id, pm.policy_significance_id'
             },
+            'budget__period_start_year': {
+                'select': 'YEAR(bud.period_start) as budget__period_start_year',
+                'from_addition': ['budget'],
+                'group_by': 'YEAR(bud.period_start)'
+            },
+            'location__administrative__code': {
+                'select': 'l.adm_country_iso_id',
+                'from_addition': ['location'],
+            }
         }
 
         for group_by_key in group_by_arr:
@@ -352,6 +375,9 @@ class ActivityAggregateResource(ModelResource):
 
                 if 'where_addition' in group_by_dict[group_by_key] and query:
                     where_list.append(group_by_dict[group_by_key]['where_addition'])
+
+                if 'where_search_addition' in group_by_dict[group_by_key] and name_query:
+                    where_list.append(group_by_dict[group_by_key]['where_search_addition'])
             else:
                 return HttpResponse(ujson.dumps({
                     "error": "Invalid group by key, see included list for viable keys.",
@@ -375,9 +401,6 @@ class ActivityAggregateResource(ModelResource):
             ','.join(group_by_list),
             ' '])
 
-
-
-
         if order_by:
             if order_by[:1] == '-':
                 order_by = 'ORDER BY ' + order_by[1:] + ' DESC '
@@ -390,7 +413,7 @@ class ActivityAggregateResource(ModelResource):
         print query_select + query_from + query_where + query_group_by + order_by + limit
 
         cursor = connection.cursor()
-        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit, {"result_query": result_query, })
+        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit, {"result_query": result_query, "name_query": '%' + name_query + '%',})
         results = self.format_results(cursor=cursor)
 
         return HttpResponse(ujson.dumps(results), content_type='application/json')
