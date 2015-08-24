@@ -393,7 +393,7 @@ class ActivityAggregateResource(ModelResource):
 
         join_list.extend(extra_where_and_join[1])
 
-        query_select = 'SELECT ' + ', '.join(select_list) + ' '
+        query_select = 'SELECT SQL_CALC_FOUND_ROWS ' + ', '.join(select_list) + ' '
 
         query_from = self.create_join_string(join_list) + ' '
 
@@ -418,7 +418,14 @@ class ActivityAggregateResource(ModelResource):
         # print query_select + query_from + query_where + query_group_by + order_by + limit + offset
 
         cursor = connection.cursor()
-        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit + offset, {"result_query": result_query, "name_query": '%' + name_query + '%',})
+        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit + offset,
+                       {"result_query": result_query, "name_query": '%' + name_query + '%'})
         results = self.format_results(cursor=cursor)
 
-        return HttpResponse(ujson.dumps(results), content_type='application/json')
+        cursor.execute('SELECT FOUND_ROWS();')
+        count = self.format_results(cursor=cursor)
+
+        return HttpResponse(ujson.dumps({
+            'count': count[0]['FOUND_ROWS()'],
+            'results': results
+        }), content_type='application/json')
