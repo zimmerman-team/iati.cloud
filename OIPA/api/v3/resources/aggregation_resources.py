@@ -222,6 +222,7 @@ class ActivityAggregateResource(ModelResource):
         name_query = request.GET.get('name_query', '')
         order_by = request.GET.get('order_by', '')
         limit = request.GET.get('limit', '')
+        offset = request.GET.get('offset', '')
 
         select_list = []
         join_list = []
@@ -401,6 +402,7 @@ class ActivityAggregateResource(ModelResource):
             ','.join(group_by_list),
             ' '])
 
+        # to do, sec it
         if order_by:
             if order_by[:1] == '-':
                 order_by = 'ORDER BY ' + order_by[1:] + ' DESC '
@@ -410,10 +412,13 @@ class ActivityAggregateResource(ModelResource):
         if limit:
             limit = 'LIMIT ' + str(limit)
 
-        print query_select + query_from + query_where + query_group_by + order_by + limit
+        if offset:
+            offset = ' OFFSET ' + str(offset)
+
+        # print query_select + query_from + query_where + query_group_by + order_by + limit + offset
 
         cursor = connection.cursor()
-        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit, {"result_query": result_query, "name_query": '%' + name_query + '%',})
+        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit + offset, {"result_query": result_query, "name_query": '%' + name_query + '%',})
         results = self.format_results(cursor=cursor)
 
         return HttpResponse(ujson.dumps(results), content_type='application/json')
