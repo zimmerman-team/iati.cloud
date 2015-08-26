@@ -130,7 +130,6 @@ class ActivityAggregateResource(ModelResource):
                 'type': '>'},
         ]
 
-
         for filter_item in filters:
             filter_list_item = self.get_and_query(
                 request,
@@ -143,7 +142,6 @@ class ActivityAggregateResource(ModelResource):
 
                 filter_list.append(filter_list_item)
                 join_list.extend(filter_item['from_addition'])
-
 
         #search
         q = request.GET.get('query', '')
@@ -223,17 +221,19 @@ class ActivityAggregateResource(ModelResource):
         order_by = request.GET.get('order_by', '')
         limit = request.GET.get('limit', '')
         offset = request.GET.get('offset', '')
+        extra_select = request.GET.get('extra_select', '')
 
         select_list = []
         join_list = []
         where_list = []
         group_by_list = []
 
-        # TO DO: Clean this
-        extra_select = request.GET.get('extra_select', '')
-        if extra_select:
-            select_list.append(extra_select)
+        extra_select_dict = {
+            'activity_count': 'count(distinct a.id) as activity_count'
+        }
 
+        if extra_select in extra_select_dict:
+            select_list.append(extra_select_dict[extra_select])
 
         aggregation_dict = {
             'iati-identifier': {
