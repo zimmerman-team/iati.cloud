@@ -128,9 +128,25 @@ class ActivityAggregateResource(ModelResource):
                 'filter_name': 'bud.period_end',
                 'from_addition': ['result'],
                 'type': '>'},
+            {
+                'parameter_name': 'location__adm_country_iso_id__in',
+                'filter_name': 'l.adm_country_iso_id',
+                'from_addition': ['location'],
+                'type': '='},
+            {
+                'parameter_name': 'not_in_locations',
+                'static': ' a.id not in (select activity_id from iati_location) ',
+                'from_addition': []},
         ]
 
         for filter_item in filters:
+            if 'static' in filter_item:
+                parameter = request.GET.get(filter_item['parameter_name'], '')
+                if parameter != '':
+                    filter_list.append(filter_item['static'])
+                    join_list.extend(filter_item['from_addition'])
+                break
+
             filter_list_item = self.get_and_query(
                 request,
                 filter_item['parameter_name'],
@@ -178,7 +194,12 @@ class ActivityAggregateResource(ModelResource):
 
     def create_join_string(self, join_list):
 
-        join_list = list(set(join_list))  # remove duplicates
+        def remove_duplicates(seq):
+            seen = set()
+            seen_add = seen.add
+            return [ x for x in seq if not (x in seen or seen_add(x))]
+
+        join_list = remove_duplicates(join_list)
 
         join_map = {
             'title': 'JOIN iati_title as t on a.id = t.activity_id',
@@ -197,6 +218,7 @@ class ActivityAggregateResource(ModelResource):
             'activity-search-data': 'JOIN iati_activitysearchdata as asd on a.id = asd.activity_id',
             'document-link': 'JOIN iati_documentlink as dl on a.id = dl.activity_id',
             'budget': 'JOIN iati_budget as bud on a.id = bud.activity_id',
+            'location__countries': 'JOIN geodata_country as lc on l.adm_country_iso_id = lc.code'
         }
 
         joins = []
@@ -229,7 +251,8 @@ class ActivityAggregateResource(ModelResource):
         group_by_list = []
 
         extra_select_dict = {
-            'activity_count': 'count(distinct a.id) as activity_count'
+            'activity_count': 'count(distinct a.id) as activity_count',
+            'country_region_id': 'c.region_id'
         }
 
         if extra_select in extra_select_dict:
@@ -272,6 +295,14 @@ class ActivityAggregateResource(ModelResource):
             'budget__value': {
                 'select': 'sum(bud.value) as budget__value',
                 'from_addition': ['budget']},
+            'location_commitment': {
+                'select': '(sum(t.value)/count(distinct l.adm_country_iso_id)) as value_by_country',
+                'from_addition': ['transaction'],
+                'where_addition': 'AND t.transaction_type_id = "C" '},
+            'location_disbursement': {
+                'select': '(sum(t.value)/count(distinct l.adm_country_iso_id)) as value_by_country',
+                'from_addition': ['transaction'],
+                'where_addition': 'AND t.transaction_type_id = "D" '},
         }
 
         if aggregation_key in aggregation_dict:
@@ -358,6 +389,11 @@ class ActivityAggregateResource(ModelResource):
             'location__administrative__code': {
                 'select': 'l.adm_country_iso_id',
                 'from_addition': ['location'],
+            },
+            'location_countries': {
+                'select': 'a.id, l.adm_country_iso_id as loc_country_id, lc.name as country_name, lc.region_id',
+                'from_addition': ['location', 'location__countries'],
+                'group_by': 'a.id, l.adm_country_iso_id',
             }
         }
 
@@ -391,7 +427,6 @@ class ActivityAggregateResource(ModelResource):
         query_where += extra_where_and_join[0] + ' '
 
 
-        join_list.extend(extra_where_and_join[1])
 
         query_select = 'SELECT SQL_CALC_FOUND_ROWS ' + ', '.join(select_list) + ' '
 
@@ -415,10 +450,21 @@ class ActivityAggregateResource(ModelResource):
         if offset:
             offset = ' OFFSET ' + str(offset)
 
-        # print query_select + query_from + query_where + query_group_by + order_by + limit + offset
+        full_query = query_select + query_from + query_where + query_group_by + order_by + limit + offset
+
+        # weird edge case for value by location country
+        if 'location_countries' in group_by_arr:
+            full_query = full_query.replace('SQL_CALC_FOUND_ROWS ', '')
+            full_query = ''.join([
+                'select SQL_CALC_FOUND_ROWS loc_country_id, sum(value_by_country) as total_value, region_id, country_name from (',
+                full_query,
+                ') as per_activity group by per_activity.loc_country_id'
+            ])
+
+        print full_query
 
         cursor = connection.cursor()
-        cursor.execute(query_select + query_from + query_where + query_group_by + order_by + limit + offset,
+        cursor.execute(full_query,
                        {"result_query": result_query, "name_query": '%' + name_query + '%'})
         results = self.format_results(cursor=cursor)
 
