@@ -1,5 +1,5 @@
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import ListAPIView, GenericAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 from iati.models import Activity
 from api.activity import serializers
@@ -8,42 +8,6 @@ from api.activity.aggregation import AggregationsPaginationSerializer
 from api.generics.filters import BasicFilterBackend
 from api.generics.filters import SearchFilter
 from api.transaction.serializers import TransactionSerializer
-
-from django.db.models import Q, Count, Sum
-from rest_framework.response import Response
-
-from django.db import connection
-
-class ActivityAggregations(GenericAPIView):
-
-    queryset = Activity.objects.all()
-
-    filter_backends = (SearchFilter, BasicFilterBackend, OrderingFilter,)
-    filter_class = filters.ActivityFilter
-    # serializer_class = activitySerializers.AggregationSerializer
-    # fields = ('url', 'id', 'title', 'total_budget')
-    # pagination_serializer_class = AggregationsPaginationSerializer
-
-    def dictfetchall(self, cursor):
-        "Returns all rows from a cursor as a dict"
-        desc = cursor.description
-        return [
-            dict(zip([col[0] for col in desc], row))
-            for row in cursor.fetchall()
-        ]
-
-    def get(self, request, *args, **kwargs):
-        # queryset = self.filter_queryset(self.get_queryset())
-
-        cursor = connection.cursor()
-        cursor.execute("select country_id, sum(disbursement_per_country) as disbursement from ( select a.id, l.adm_country_iso_id as country_id, (sum(t.value)/count(distinct l.adm_country_iso_id)) as disbursement_per_country   from iati_activity as a  join iati_location as l on a.id = l.activity_id   join iati_transaction as t on t.activity_id = a.id  where a.reporting_organisation_id = 'NL-1'  and t.transaction_type_id = 'D'  group by a.id, l.adm_country_iso_id ) as per_activity  group by per_activity.country_id")
-        # row = cursor.fetchone()
-
-        # q = self.get_queryset().raw("select country_id, sum(disbursement_per_country) from ( select a.id, l.adm_country_iso_id as country_id, (sum(t.value)/count(distinct l.adm_country_iso_id)) as disbursement_per_country   from iati_activity as a  join iati_location as l on a.id = l.activity_id   join iati_transaction as t on t.activity_id = a.id  where a.reporting_organisation_id = 'NL-1'  and t.transaction_type_id = 'D'  group by a.id, l.adm_country_iso_id ) as per_activity  group by per_activity.country_id")
-
-        # q = list(q)
-
-        return Response(self.dictfetchall(cursor))
 
 
 class ActivityList(ListAPIView):
