@@ -139,7 +139,7 @@ class ActivityAggregateResource(ModelResource):
                 'from_addition': []},
             {
                 'parameter_name': 'activity_status__in',
-                'filter_name': 'a.activity_status',
+                'filter_name': 'a.activity_status_id',
                 'from_addition': []},
             {
                 'parameter_name': 'transaction_date__year__in',
@@ -147,13 +147,15 @@ class ActivityAggregateResource(ModelResource):
                 'from_addition': ['transaction']},
         ]
 
+
         for filter_item in filters:
+
             if 'static' in filter_item:
                 parameter = request.GET.get(filter_item['parameter_name'], '')
                 if parameter != '':
                     filter_list.append(filter_item['static'])
                     join_list.extend(filter_item['from_addition'])
-                break
+                continue
 
             filter_list_item = self.get_and_query(
                 request,
