@@ -137,6 +137,14 @@ class ActivityAggregateResource(ModelResource):
                 'parameter_name': 'not_in_locations',
                 'static': ' a.id not in (select activity_id from iati_location) ',
                 'from_addition': []},
+            {
+                'parameter_name': 'activity_status__in',
+                'filter_name': 'a.activity_status',
+                'from_addition': []},
+            {
+                'parameter_name': 'transaction_date__year__in',
+                'filter_name': 'YEAR(t.transaction_date)',
+                'from_addition': ['transaction']},
         ]
 
         for filter_item in filters:
