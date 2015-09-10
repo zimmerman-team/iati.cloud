@@ -61,7 +61,7 @@ class ActivityQuerySet(query.QuerySet):
 
     def distinct_if_necessary(self, applicable_filters):
         for key in applicable_filters:
-            if key[-4:] == '__in':
+            if key[-4:] == '__in' or key[-5:] == '__gte':
                 return self.distinct()
         return self
     distinct_if_necessary.queryset_only = True

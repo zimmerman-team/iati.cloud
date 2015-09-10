@@ -85,6 +85,9 @@ class ActivityViewTransactionResource(ModelResource):
         include_resource_uri = False
         excludes = ['id', 'ref', 'description', 'provider_activity']
         allowed_methods = ['get']
+        filtering = {
+            'transaction_date': ALL,
+        }
 
     def dehydrate(self, bundle):
 

@@ -145,6 +145,16 @@ class ActivityAggregateResource(ModelResource):
                 'parameter_name': 'transaction_date__year__in',
                 'filter_name': 'YEAR(t.transaction_date)',
                 'from_addition': ['transaction']},
+            {
+                'parameter_name': 'transactions__transaction_date__gte',
+                'filter_name': 't.transaction_date',
+                'from_addition': ['transaction'],
+                'type': '>='},
+            {
+                'parameter_name': 'transactions__transaction_date__lte',
+                'filter_name': 't.transaction_date',
+                'from_addition': ['transaction'],
+                'type': '<='},
         ]
 
 
@@ -335,12 +345,12 @@ class ActivityAggregateResource(ModelResource):
                 'select': 'rc.country_id, c.name, AsText(c.center_longlat) as location',
                 'from_addition': ['countries'],
                 'group_by': 'rc.country_id',
-                'where_search_addition': 'AND c.name like %(name_query)s '},
+                'where_search_addition': 'AND c.name like %(name_query)s OR c.code like %(name_query)s '},
             'recipient-region': {
                 'select': 'r.name, rr.region_id, AsText(r.center_longlat) as location',
                 'from_addition': ['regions'],
                 'group_by': 'rr.region_id',
-                'where_search_addition': 'AND r.name like %(name_query)s '},
+                'where_search_addition': 'AND r.name like %(name_query)s OR r.code like %(name_query)s '},
             'activity-date__start_planned': {
                 'select': 'YEAR(start_planned) as start_planned_year',
                 'group_by': 'YEAR(start_planned)'},
@@ -356,13 +366,13 @@ class ActivityAggregateResource(ModelResource):
             'sector': {
                 'select': 'acts.sector_id, s.name',
                 'from_addition': ['sectors'],
-                'where_search_addition': 'AND s.name like %(name_query)s '},
+                'where_search_addition': 'AND s.name like %(name_query)s OR s.code like %(name_query)s '},
             'reporting-org': {
                 'select': 'a.reporting_organisation_id'},
             'participating-org': {
                 'select': 'po.organisation_id, o.name',
                 'from_addition': ['participating-org'],
-                'where_search_addition': 'AND o.name like %(name_query)s '},
+                'where_search_addition': 'AND o.name like %(name_query)s OR o.code like %(name_query)s '},
             'policy-marker': {
                 'select': 'pm.policy_marker_id',
                 'from_addition': ['policy-marker']},
@@ -436,8 +446,6 @@ class ActivityAggregateResource(ModelResource):
         extra_where_and_join = self.get_filter_string(request, join_list)
         query_where += extra_where_and_join[0] + ' '
 
-
-
         query_select = 'SELECT SQL_CALC_FOUND_ROWS ' + ', '.join(select_list) + ' '
 
         query_from = self.create_join_string(join_list) + ' '
@@ -471,8 +479,6 @@ class ActivityAggregateResource(ModelResource):
                 ') as per_activity group by per_activity.loc_country_id'
             ])
 
-        print full_query
-
         cursor = connection.cursor()
         cursor.execute(full_query,
                        {"result_query": result_query, "name_query": '%' + name_query + '%'})
@@ -485,3 +491,4 @@ class ActivityAggregateResource(ModelResource):
             'count': count[0]['FOUND_ROWS()'],
             'results': results
         }), content_type='application/json')
+

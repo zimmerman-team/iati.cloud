@@ -39,7 +39,7 @@ class ActivityListResource(ActivityResource):
     default_tied_status = fields.ForeignKey(ActivityViewTiedStatusResource, attribute='default_tied_status', full=True, null=True)
     default_currency = fields.ForeignKey(ActivityViewCurrencyResource, attribute='default_currency', full=True, null=True)
     documents = fields.ToManyField(DocumentResource, 'documentlink_set', full=True, null=True)
-    transactions = fields.ToManyField(ActivityViewTransactionResource, 'transaction_set', full=True, null=True, use_in='detail')
+    transactions = fields.ToManyField(ActivityViewTransactionResource, 'transaction', full=True, null=True, use_in='detail')
 
     class Meta:
         queryset = Activity.objects.all()
