@@ -138,6 +138,10 @@ class ActivityAggregateResource(ModelResource):
                 'static': ' a.id not in (select activity_id from iati_location) ',
                 'from_addition': []},
             {
+                'parameter_name': 'not_in_recipientcountries',
+                'static': ' a.id not in (select activity_id from iati_activityrecipientcountry) ',
+                'from_addition': []},
+            {
                 'parameter_name': 'in_locations',
                 'static': ' a.id in (select activity_id from iati_location) ',
                 'from_addition': []},
@@ -490,6 +494,8 @@ class ActivityAggregateResource(ModelResource):
 
         cursor.execute('SELECT FOUND_ROWS();')
         count = self.format_results(cursor=cursor)
+
+        # print full_query
 
         return HttpResponse(ujson.dumps({
             'count': count[0]['FOUND_ROWS()'],
