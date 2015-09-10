@@ -138,6 +138,10 @@ class ActivityAggregateResource(ModelResource):
                 'static': ' a.id not in (select activity_id from iati_location) ',
                 'from_addition': []},
             {
+                'parameter_name': 'in_locations',
+                'static': ' a.id in (select activity_id from iati_location) ',
+                'from_addition': []},
+            {
                 'parameter_name': 'activity_status__in',
                 'filter_name': 'a.activity_status_id',
                 'from_addition': []},
