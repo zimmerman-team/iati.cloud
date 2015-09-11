@@ -246,7 +246,7 @@ class ActivityAggregateResource(ModelResource):
             'activity-search-data': 'JOIN iati_activitysearchdata as asd on a.id = asd.activity_id',
             'document-link': 'JOIN iati_documentlink as dl on a.id = dl.activity_id',
             'budget': 'JOIN iati_budget as bud on a.id = bud.activity_id',
-            'location__countries': 'JOIN geodata_country as lc on l.adm_country_iso_id = lc.code'
+            'location__countries': 'JOIN geodata_country as lc on l.adm_country_iso_id = lc.code JOIN (select activity_id, count(adm_country_iso_id) as countryCount from iati_location group by activity_id) as il on il.activity_id = a.id'
         }
 
         joins = []
@@ -324,11 +324,11 @@ class ActivityAggregateResource(ModelResource):
                 'select': 'sum(bud.value) as budget__value',
                 'from_addition': ['budget']},
             'location_commitment': {
-                'select': '(sum(t.value)/count(distinct l.adm_country_iso_id)) as value_by_country',
+                'select': '(sum(t.value)/countryCount) as value_by_country',
                 'from_addition': ['transaction'],
                 'where_addition': 'AND t.transaction_type_id = "C" '},
             'location_disbursement': {
-                'select': '(sum(t.value)/count(distinct l.adm_country_iso_id)) as value_by_country',
+                'select': '(sum(t.value)/countryCount) as value_by_country',
                 'from_addition': ['transaction'],
                 'where_addition': 'AND t.transaction_type_id = "D" '},
         }
@@ -495,7 +495,7 @@ class ActivityAggregateResource(ModelResource):
         cursor.execute('SELECT FOUND_ROWS();')
         count = self.format_results(cursor=cursor)
 
-        # print full_query
+        print full_query
 
         return HttpResponse(ujson.dumps({
             'count': count[0]['FOUND_ROWS()'],
