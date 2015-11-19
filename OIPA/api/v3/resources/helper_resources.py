@@ -32,9 +32,16 @@ class DescriptionResource(ModelResource):
         include_resource_uri = False
         excludes = ['id']
 
-class PolicyMarkerResource(ModelResource):
+class PolicyMarkerSignificanceResource(ModelResource):
     class Meta:
-        queryset = PolicyMarker.objects.all()
+        queryset = PolicySignificance.objects.all()
+        include_resource_uri = False
+
+class ActivityPolicyMarkerResource(ModelResource):
+    significance = fields.ForeignKey(PolicyMarkerSignificanceResource, 'policy_significance', full=True, null=True)
+
+    class Meta:
+        queryset = ActivityPolicyMarker.objects.all()
         include_resource_uri = False
 
 

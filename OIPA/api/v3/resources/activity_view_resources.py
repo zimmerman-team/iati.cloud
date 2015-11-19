@@ -9,7 +9,7 @@ from iati.models import ContactInfo, Activity, Organisation, AidType, FlowType, 
     TiedStatus, Transaction, ActivityStatus, Currency, OrganisationRole, ActivityScope, \
     ActivityParticipatingOrganisation, Location, Result, RelatedActivity
 from api.v3.resources.helper_resources import TitleResource, DescriptionResource, FinanceTypeResource, \
-    ActivityBudgetResource, DocumentResource, WebsiteResource, PolicyMarkerResource, OtherIdentifierResource
+    ActivityBudgetResource, DocumentResource, WebsiteResource, ActivityPolicyMarkerResource, OtherIdentifierResource
 from api.v3.resources.advanced_resources import OnlyCountryResource, OnlyRegionResource
 
 # cache specific
@@ -181,7 +181,7 @@ class ActivityResource(ModelResource):
     reporting_organisation = fields.ForeignKey(ActivityViewOrganisationResource, 'reporting_organisation', full=True, null=True, use_in='detail' )
     activity_status = fields.ForeignKey(ActivityViewActivityStatusResource, 'activity_status', full=True, null=True, use_in='detail')
     websites = fields.ToManyField(WebsiteResource, 'activity_website_set', full=True, null=True, use_in='detail')
-    policy_markers = fields.ToManyField(PolicyMarkerResource, 'policy_marker', full=True, null=True, use_in='detail')
+    policy_markers = fields.ToManyField(ActivityPolicyMarkerResource, 'activitypolicymarker_set', full=True, null=True, use_in='detail')
     collaboration_type = fields.ForeignKey(ActivityViewCollaborationTypeResource, attribute='collaboration_type', full=True, null=True, use_in='detail')
     default_flow_type = fields.ForeignKey(ActivityViewFlowTypeResource, attribute='default_flow_type', full=True, null=True, use_in='detail')
     default_finance_type = fields.ForeignKey(FinanceTypeResource, attribute='default_finance_type', full=True, null=True, use_in='detail')
