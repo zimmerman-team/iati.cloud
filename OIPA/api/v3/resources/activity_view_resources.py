@@ -147,6 +147,9 @@ class ActivityLocationResource(ModelResource):
     class Meta:
         queryset = Location.objects.all()
         include_resource_uri = False
+        filtering = {
+            'longitude': ALL
+        }
         excludes = ['id', 'activity_description', 'adm_code', 'adm_country_adm1', 'adm_country_adm2',
                     'adm_country_name', 'adm_level', 'gazetteer_entry', 'location_id_code', 'point_srs_name',
                     'ref', 'type_description', 'point_pos']
@@ -226,6 +229,7 @@ class ActivityResource(ModelResource):
             'end_planned': ALL,
             'end_actual': ALL,
             'total_budget': ALL,
+            'locations': ALL_WITH_RELATIONS,
             'sectors': ('exact', 'in'),
             'regions': ('exact', 'in'),
             'countries': ('exact', 'in'),
