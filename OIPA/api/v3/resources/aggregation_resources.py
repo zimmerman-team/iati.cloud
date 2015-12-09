@@ -95,14 +95,14 @@ class ActivityAggregateResource(ModelResource):
                 'filter_name': 'YEAR(end_actual)',
                 'from_addition': []},
             {
-                'parameter_name': 'total_budget__lt',
+                'parameter_name': 'total_budget__lte',
                 'filter_name': 'a.total_budget',
-                'type': '<',
+                'type': '<=',
                 'from_addition': []},
             {
-                'parameter_name': 'total_budget__gt',
+                'parameter_name': 'total_budget__gte',
                 'filter_name': 'a.total_budget',
-                'type': '>',
+                'type': '>=',
                 'from_addition': []},
             {
                 'parameter_name': 'policy_marker__in',
