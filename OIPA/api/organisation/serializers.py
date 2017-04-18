@@ -952,10 +952,10 @@ class OrganisationDocumentLinkSerializer(ModelSerializerNoValidation):
 
         return update_instance
 
-class OrganisationReportingOrganisationSerializer(ModelSerializer):
+class OrganisationReportingOrganisationSerializer(ModelSerializerNoValidation):
 
     ref = serializers.CharField(source="reporting_org_identifier")
-    type = serializers.CharField(source="org_type")
+    type = CodelistSerializer(source="org_type")
     secondary_reporter = serializers.BooleanField()
 
     narratives = OrganisationNarrativeSerializer(many=True)
@@ -971,6 +971,49 @@ class OrganisationReportingOrganisationSerializer(ModelSerializer):
             'secondary_reporter',
             'narratives',
         )
+
+    def validate(self, data):
+        organisation = get_or_raise(org_models.Organisation, data, 'organisation')
+
+        validated = validators.organisation_reporting_org(
+            organisation,
+            data.get('reporting_org_identifier'),
+            data.get('org_type', {}).get('code'),
+            data.get('secondary_reporter'),
+            data.get('narratives')
+        )
+
+        return handle_errors(validated)
+
+
+    def create(self, validated_data):
+        organisation = validated_data.get('organisation')
+        narratives = validated_data.pop('narratives', [])
+
+        instance = org_models.OrganisationReportingOrganisation.objects.create(**validated_data)
+
+        save_narratives(instance, narratives, organisation)
+
+        organisation.modified = True
+        organisation.save()
+
+        return instance
+
+
+    def update(self, instance, validated_data):
+        organisation = validated_data.get('organisation')
+        narratives = validated_data.pop('narratives', [])
+
+        update_instance = org_models.OrganisationReportingOrganisation(**validated_data)
+        update_instance.id = instance.id
+        update_instance.save()
+
+        save_narratives(update_instance, narratives, organisation)
+
+        organisation.modified = True
+        organisation.save()
+
+        return update_instance
 
 
 class OrganisationSerializer(DynamicFieldsModelSerializer):
@@ -1007,6 +1050,13 @@ class OrganisationSerializer(DynamicFieldsModelSerializer):
             'xml_lang',
             'default_currency',
             'name',
+            'reporting_org',
+            'total_budget',
+            'recipient_org_budget',
+            'recipient_region_budget',
+            'recipient_country_budget',
+            'total_expenditure',
+            'document_link',
             'published_state',
         )
 

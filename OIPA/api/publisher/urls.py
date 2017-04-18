@@ -461,5 +461,12 @@ urlpatterns = [
     url(r'^(?P<publisher_id>[^@$+,/:;=?]+)/organisations/(?P<pk>[^@$&+,/:;=?]+)/recipient_country_budgets/(?P<recipient_country_budget_id>[^@$&+,/:;=?]+)/budget_lines/(?P<id>[^@$&+,/:;=?]+)$',
             api.organisation.views.OrganisationRecipientCountryBudgetBudgetLineDetailCRUD.as_view(),
             name='organisation-recipient_country_budget-detail'),
-]
 
+    url(r'^(?P<publisher_id>[^@$+,/:;=?]+)/organisations/(?P<pk>[^@$&+,/:;=?]+)/reporting_organisations/$',
+            api.organisation.views.OrganisationReportingOrganisationListCRUD.as_view(),
+            name='organisation-reporting_organisation-list'),
+    url(r'^(?P<publisher_id>[^@$+,/:;=?]+)/organisations/(?P<pk>[^@$&+,/:;=?]+)/reporting_organisations/(?P<id>[^@$&+,/:;=?]+)$',
+            api.organisation.views.OrganisationReportingOrganisationDetailCRUD.as_view(),
+            name='organisation-reporting_organisation-detail'),
+
+]

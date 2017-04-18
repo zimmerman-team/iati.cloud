@@ -1406,3 +1406,63 @@ def document_link_recipient_country(
             },
         }
 
+def organisation_reporting_org(
+        organisation,
+        ref,
+        org_type,
+        secondary_reporter,
+        narratives_data=[],
+        ):
+
+        organisation = get_or_none(models.Organisation, organisation_identifier=ref)
+        org_type = get_or_none(codelist_models.OrganisationType, code=org_type)
+
+        warnings = []
+        errors = []
+
+        if not ref:
+            errors.append(
+                RequiredFieldError(
+                    "reporting-org",
+                    "ref",
+                    apiField="ref",
+                    ))
+
+        if not org_type:
+            errors.append(
+                FieldValidationError(
+                    "reporting-org",
+                    "type",
+                    apiField="type.code",
+                    ))
+
+        if not secondary_reporter:
+            secondary_reporter = False
+
+        if not organisation:
+            warnings.append(
+                FieldValidationError(
+                    "reporting-org",
+                    "organisation",
+                    "organisation with ref {} does not exist in organisation standard".format(ref),
+                    apiField="organisation",
+                    ))
+
+        validated_narratives = narratives_validate(narratives_data, organisation.default_lang, organisation.id,  warnings, errors)
+        errors = errors + validated_narratives['errors']
+        warnings = warnings + validated_narratives['warnings']
+
+        return {
+            "warnings": warnings,
+            "errors": errors,
+            "validated_data": { # maps to model fields
+                "organisation": organisation,
+                "reporting_org_identifier": ref,
+                "reporting_org": organisation,
+                "org_type": org_type,
+                "secondary_reporter": secondary_reporter,
+                "narratives": validated_narratives['validated_data'],
+            }
+        }
+        
+

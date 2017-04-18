@@ -618,3 +618,27 @@ class OrganisationDocumentLinkRecipientCountryDetail(RetrieveUpdateDestroyAPIVie
     def get_object(self):
         pk = self.kwargs.get('recipient_country_id')
         return models.DocumentLinkRecipientCountry.objects.get(pk=pk)
+
+class OrganisationReportingOrganisationListCRUD(ListCreateAPIView):
+    serializer_class = serializers.OrganisationReportingOrganisationSerializer
+
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (PublisherPermissions, )
+
+    def get_queryset(self):
+        pk = self.kwargs.get('pk')
+        try:
+            return models.Organisation.objects.get(pk=pk).reporting_org.all()
+        except models.Organisation.DoesNotExist:
+            return None
+
+class OrganisationReportingOrganisationDetailCRUD(RetrieveUpdateDestroyAPIView):
+    serializer_class = serializers.OrganisationReportingOrganisationSerializer
+
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (PublisherPermissions, )
+
+    def get_object(self):
+        pk = self.kwargs.get('id')
+        return models.OrganisationReportingOrganisation.objects.get(pk=pk)
+

@@ -493,6 +493,7 @@ class OrganisationReportingOrganisationFactory(NoDatabaseFactory):
         django_get_or_create = ('id',)
 
     id = '123123'
+    reporting_org_identifier = 'blabla'
     org_type = SubFactory(OrganisationTypeFactory)
     secondary_reporter = False
 

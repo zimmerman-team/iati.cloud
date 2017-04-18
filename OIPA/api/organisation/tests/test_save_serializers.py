@@ -1611,3 +1611,115 @@ class DocumentLinkRecipientCountrySaveTestCase(TestCase):
 
         with self.assertRaises(ObjectDoesNotExist):
             instance = org_models.DocumentLinkRecipientCountry.objects.get(pk=document_link_recipient_country.id)
+
+
+class ReportingOrganisationSaveTestCase(TestCase):
+    request_dummy = RequestFactory().get('/')
+    c = APIClient()
+
+    def setUp(self):
+        admin_group = OrganisationAdminGroupFactory.create()
+        user = OrganisationUserFactory.create(user__username='test1')
+
+        admin_group.organisationuser_set.add(user)
+
+        self.publisher = admin_group.publisher
+
+        self.c.force_authenticate(user.user)
+
+    def test_create_reporting_organisation(self):
+
+        organisation = iati_factory.OrganisationFactory.create()
+        iati_factory.OrganisationTypeFactory.create(code=9)
+        iati_factory.OrganisationRoleFactory.create(code=1)
+
+        data = {
+            "ref": 'GB-COH-03580586',
+            "organisation": organisation.id,
+            "type": {
+                "code": '9',
+                "name": 'irrelevant',
+            },
+            "secondary_reporter": 1,
+            "narratives": [
+                {
+                    "text": "test1"
+                },
+                {
+                    "text": "test2"
+                }
+            ]
+        }
+
+        res = self.c.post(
+                "/api/publishers/{}/organisations/{}/reporting_organisations/?format=json".format(self.publisher.id, organisation.id), 
+                data,
+                format='json'
+                )
+
+        self.assertEquals(res.status_code, 201, res.json())
+
+        instance = org_models.OrganisationReportingOrganisation.objects.get(reporting_org_identifier=data['ref'])
+
+        self.assertEqual(instance.reporting_org_identifier, data['ref'])
+        self.assertEqual(instance.reporting_org.id, data['organisation'])
+        self.assertEqual(instance.org_type.code, data['type']['code'])
+        self.assertEqual(instance.secondary_reporter, bool(data['secondary_reporter']))
+
+        narratives = instance.narratives.all()
+        self.assertEqual(narratives[0].content, data['narratives'][0]['text'])
+        self.assertEqual(narratives[1].content, data['narratives'][1]['text'])
+
+    def test_update_reporting_organisation(self):
+        reporting_org = iati_factory.OrganisationReportingOrganisationFactory.create()
+        iati_factory.OrganisationTypeFactory.create(code=9)
+
+        data = {
+            "ref": 'GB-COH-03580586',
+            "organisation": reporting_org.organisation.id,
+            "type": {
+                "code": '9',
+                "name": 'irrelevant',
+            },
+            "secondary_reporter": 1,
+            "narratives": [
+                {
+                    "text": "test1"
+                },
+                {
+                    "text": "test2"
+                }
+            ]
+        }
+
+        res = self.c.put(
+                "/api/publishers/{}/organisations/{}/reporting_organisations/{}?format=json".format(self.publisher.id, reporting_org.organisation.id, reporting_org.id), 
+                data,
+                format='json'
+                )
+
+        self.assertEquals(res.status_code, 200, res.json())
+
+        instance = org_models.OrganisationReportingOrganisation.objects.get(reporting_org_identifier=data['ref'])
+
+        self.assertEqual(instance.reporting_org_identifier, data['ref'])
+        self.assertEqual(instance.reporting_org.id, data['organisation'])
+        self.assertEqual(instance.org_type.code, data['type']['code'])
+        self.assertEqual(instance.secondary_reporter, bool(data['secondary_reporter']))
+
+        narratives = instance.narratives.all()
+        self.assertEqual(narratives[0].content, data['narratives'][0]['text'])
+        self.assertEqual(narratives[1].content, data['narratives'][1]['text'])
+
+    def test_delete_reporting_organisation(self):
+        reporting_org = iati_factory.OrganisationReportingOrganisationFactory.create()
+
+        res = self.c.delete(
+                "/api/publishers/{}/organisations/{}/reporting_organisations/{}?format=json".format(self.publisher.id, reporting_org.organisation.id, reporting_org.id), 
+                format='json'
+                )
+
+        self.assertEquals(res.status_code, 204)
+
+        with self.assertRaises(ObjectDoesNotExist):
+            instance = org_models.OrganisationReportingOrganisation.objects.get(reporting_org_identifier=reporting_org.reporting_org_identifier)
