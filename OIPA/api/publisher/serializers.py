@@ -9,6 +9,8 @@ from django.core.urlresolvers import reverse
 from iati.models import Activity
 from django.db.models import Sum
 
+from api.organisation.serializers import OrganisationSerializer
+
 
 class PublisherSerializer(DynamicFieldsModelSerializer):
 
@@ -21,6 +23,8 @@ class PublisherSerializer(DynamicFieldsModelSerializer):
     note_count = SerializerMethodField()
     activities = SerializerMethodField()
 
+    organisation = OrganisationSerializer()
+
     class Meta:
         model = Publisher
         fields = (
@@ -32,7 +36,9 @@ class PublisherSerializer(DynamicFieldsModelSerializer):
             'activities',
             'activity_count',
             'note_count',
-            'datasets',)
+            'datasets',
+            'organisation',
+            )
 
     def get_activities(self, obj):
         request = self.context.get('request')

@@ -36,7 +36,7 @@ def save_narratives(instance, data, organisation_instance):
     to_update = list(current_ids.intersection(old_ids))
 
     for fk_id in to_update:
-        narrative = iati_models.Narrative.objects.get(pk=fk_id)
+        narrative = org_models.OrganisationNarrative.objects.get(pk=fk_id)
         narrative_data = filter(lambda x: x['id'] is fk_id, data)[0]
 
         for field, data in narrative_data.iteritems():
@@ -44,14 +44,11 @@ def save_narratives(instance, data, organisation_instance):
         narrative.save()
 
     for fk_id in to_remove:
-        narrative = iati_models.Narrative.objects.get(pk=fk_id)
+        narrative = org_models.OrganisationNarrative.objects.get(pk=fk_id)
         # instance = instances.get(pk=fk_id)
         narrative.delete()
 
     for narrative_data in to_add:
-        # narrative = iati_models.Narrative.objects.get(pk=fk_id)
-        # narrative_data = filter(lambda x: x['id'] is fk_id, data)[0]
-
         org_models.OrganisationNarrative.objects.create(
                 related_object=instance, 
                 organisation=organisation_instance,
@@ -955,6 +952,27 @@ class OrganisationDocumentLinkSerializer(ModelSerializerNoValidation):
 
         return update_instance
 
+class OrganisationReportingOrganisationSerializer(ModelSerializer):
+
+    ref = serializers.CharField(source="reporting_org_identifier")
+    type = serializers.CharField(source="org_type")
+    secondary_reporter = serializers.BooleanField()
+
+    narratives = OrganisationNarrativeSerializer(many=True)
+
+    organisation = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = org_models.OrganisationReportingOrganisation
+        fields = (
+            'organisation',
+            'ref',
+            'type',
+            'secondary_reporter',
+            'narratives',
+        )
+
+
 class OrganisationSerializer(DynamicFieldsModelSerializer):
     class PublishedStateSerializer(DynamicFieldsSerializer):
         published = serializers.BooleanField()
@@ -963,10 +981,19 @@ class OrganisationSerializer(DynamicFieldsModelSerializer):
 
     url = EncodedHyperlinkedIdentityField(view_name='organisations:organisation-detail', read_only=True)
 
-    last_updated_datetime = serializers.DateTimeField(required=False)
+    last_updated_datetime = serializers.DateTimeField(required=False, read_only=True)
     xml_lang = serializers.CharField(source='default_lang.code', required=False)
     default_currency = CodelistSerializer(required=False)
+
     name = OrganisationNameSerializer(required=False)
+
+    reporting_org = OrganisationReportingOrganisationSerializer()
+    total_budget = OrganisationTotalBudgetSerializer(many=True, source="total_budgets")
+    recipient_org_budget = OrganisationRecipientOrgBudgetSerializer(many=True, source="recipientorgbudget_set")
+    recipient_region_budget = OrganisationRecipientRegionBudgetSerializer(many=True)
+    recipient_country_budget = OrganisationRecipientCountryBudgetSerializer(many=True, source="recipient_country_budgets")
+    total_expenditure = OrganisationTotalExpenditureSerializer(many=True)
+    document_link = OrganisationDocumentLinkSerializer(many=True, source="organisationdocumentlink_set")
 
     published_state = PublishedStateSerializer(source="*", read_only=True)
 
