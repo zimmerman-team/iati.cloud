@@ -956,15 +956,16 @@ class OrganisationReportingOrganisationSerializer(ModelSerializerNoValidation):
 
     ref = serializers.CharField(source="reporting_org_identifier")
     type = CodelistSerializer(source="org_type")
-    secondary_reporter = serializers.BooleanField()
+    secondary_reporter = serializers.BooleanField(required=False)
 
-    narratives = OrganisationNarrativeSerializer(many=True)
+    narratives = OrganisationNarrativeSerializer(many=True, required=False)
 
     organisation = serializers.CharField(write_only=True)
 
     class Meta:
         model = org_models.OrganisationReportingOrganisation
         fields = (
+            'id',
             'organisation',
             'ref',
             'type',

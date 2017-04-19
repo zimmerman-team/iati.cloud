@@ -1414,7 +1414,7 @@ def organisation_reporting_org(
         narratives_data=[],
         ):
 
-        organisation = get_or_none(models.Organisation, organisation_identifier=ref)
+        reporting_org = get_or_none(models.Organisation, organisation_identifier=ref)
         org_type = get_or_none(codelist_models.OrganisationType, code=org_type)
 
         warnings = []
@@ -1439,13 +1439,13 @@ def organisation_reporting_org(
         if not secondary_reporter:
             secondary_reporter = False
 
-        if not organisation:
+        if not reporting_org:
             warnings.append(
                 FieldValidationError(
                     "reporting-org",
-                    "organisation",
+                    "ref",
                     "organisation with ref {} does not exist in organisation standard".format(ref),
-                    apiField="organisation",
+                    apiField="ref",
                     ))
 
         validated_narratives = narratives_validate(narratives_data, organisation.default_lang, organisation.id,  warnings, errors)
@@ -1458,7 +1458,7 @@ def organisation_reporting_org(
             "validated_data": { # maps to model fields
                 "organisation": organisation,
                 "reporting_org_identifier": ref,
-                "reporting_org": organisation,
+                "reporting_org": reporting_org,
                 "org_type": org_type,
                 "secondary_reporter": secondary_reporter,
                 "narratives": validated_narratives['validated_data'],
