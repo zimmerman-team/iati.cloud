@@ -150,7 +150,7 @@ class OrganisationTotalBudgetSerializer(ModelSerializerNoValidation):
     period_start = serializers.CharField()
     period_end = serializers.CharField()
 
-    budget_lines = TotalBudgetBudgetLineSerializer(many=True, source="totalbudgetbudgetline_set", required=False)
+    budget_lines = TotalBudgetBudgetLineSerializer(many=True, source="totalbudgetline_set", read_only=True)
 
     class Meta:
         model = org_models.TotalBudget
