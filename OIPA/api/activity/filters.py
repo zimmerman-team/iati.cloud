@@ -239,6 +239,11 @@ class ActivityFilter(TogetherFilterSet):
         fk='activity',
     )
 
+    title_narrative_language = CharFilter(
+        name='title__narratives__language',
+        lookup_expr='exact'
+    )
+
     participating_organisation = ToManyFilter(
         qs=ActivityParticipatingOrganisation,
         lookup_type='in',
