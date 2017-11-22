@@ -1,34 +1,31 @@
+from distutils.util import strtobool
+
+from django.db.models import Q
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.fields.related import ForeignObjectRel
 from django.db.models.fields.related import OneToOneRel
-
+from django_filters import BooleanFilter
+from django_filters import CharFilter
+from django_filters import DateFilter
 from django_filters import FilterSet
 from django_filters import NumberFilter
-from django_filters import DateFilter
-from django_filters import BooleanFilter
 from django_filters import TypedChoiceFilter
-from django_filters import CharFilter
-
-from distutils.util import strtobool
+from rest_framework import filters
 
 from api.generics.filters import CommaSeparatedCharFilter
 from api.generics.filters import CommaSeparatedStickyCharFilter
-from api.generics.filters import TogetherFilterSet
 from api.generics.filters import ToManyFilter
 from api.generics.filters import ToManyNotInFilter
-
-from rest_framework import filters
-from django.db.models import Q, F
-
-from iati.models import *
-from iati.transaction.models import *
+from api.generics.filters import TogetherFilterSet
+from iati.models import Activity, ActivityParticipatingOrganisation, ActivityPolicyMarker, \
+    ActivityRecipientCountry, ActivityRecipientRegion, ActivityReportingOrganisation, \
+    ActivitySector, Budget, DocumentLink, HumanitarianScope, RelatedActivity, Result, \
+    ResultIndicatorPeriod, ResultIndicatorTitle
+from iati.transaction.models import Transaction
 from iati_synchroniser.models import Dataset, Publisher
-
-from django.contrib.postgres.search import SearchQuery
 
 
 class ActivityFilter(TogetherFilterSet):
-
     activity_id = CommaSeparatedCharFilter(
         name='id',
         lookup_expr='in')
@@ -39,7 +36,7 @@ class ActivityFilter(TogetherFilterSet):
 
     activity_scope = CommaSeparatedCharFilter(
         name='scope__code',
-        lookup_expr='in',)
+        lookup_expr='in', )
 
     document_link_category = ToManyFilter(
         qs=DocumentLink,
@@ -101,35 +98,35 @@ class ActivityFilter(TogetherFilterSet):
 
     activity_status = CommaSeparatedCharFilter(
         lookup_expr='in',
-        name='activity_status',)
+        name='activity_status', )
 
     hierarchy = CommaSeparatedCharFilter(
         lookup_expr='in',
-        name='hierarchy',)
+        name='hierarchy', )
 
     collaboration_type = CommaSeparatedCharFilter(
         lookup_expr='in',
-        name='collaboration_type',)
+        name='collaboration_type', )
 
     default_flow_type = CommaSeparatedCharFilter(
         lookup_expr='in',
-        name='default_flow_type',)
+        name='default_flow_type', )
 
     default_aid_type = CommaSeparatedCharFilter(
         lookup_expr='in',
-        name='default_aid_type',)
+        name='default_aid_type', )
 
     default_finance_type = CommaSeparatedCharFilter(
         lookup_expr='in',
-        name='default_finance_type',)
+        name='default_finance_type', )
 
     default_tied_status = CommaSeparatedCharFilter(
         lookup_expr='in',
-        name='default_tied_status',)
+        name='default_tied_status', )
 
     budget_period_start = DateFilter(
         lookup_expr='gte',
-        name='budget__period_start',)
+        name='budget__period_start', )
 
     budget_period_end = DateFilter(
         lookup_expr='lte',
@@ -228,7 +225,7 @@ class ActivityFilter(TogetherFilterSet):
         name='region__code',
         fk='activity',
     )
-    
+
     sector = ToManyFilter(
         qs=ActivitySector,
         lookup_expr='in',
@@ -306,6 +303,13 @@ class ActivityFilter(TogetherFilterSet):
         fk='activity',
     )
 
+    reporting_organisation_type = ToManyFilter(
+        qs=ActivityReportingOrganisation,
+        lookup_expr='in',
+        name='type__code',
+        fk='activity',
+    )
+
     result_title = ToManyFilter(
         qs=Result,
         lookup_expr='in',
@@ -324,7 +328,6 @@ class ActivityFilter(TogetherFilterSet):
         lookup_expr='year',
         name='period_end',
         fk='result_indicator__result__activity')
-
 
     #
     # Publisher meta filters
@@ -541,14 +544,18 @@ class ActivityFilter(TogetherFilterSet):
     #
     def filter_ready_to_publish(self, queryset, name, value):
         return queryset.filter(Q(ready_to_publish=True))
-    ready_to_publish = CharFilter(name='ready_to_publish', method='filter_ready_to_publish')
+
+    ready_to_publish = CharFilter(name='ready_to_publish',
+                                  method='filter_ready_to_publish')
 
     def filter_modified_ready_to_publish(self, queryset, name, value):
         return queryset.filter(Q(modified=True) & Q(ready_to_publish=True))
+
     modified_ready_to_publish = CharFilter(method='filter_modified_ready_to_publish')
 
     def filter_modified(self, queryset, name, value):
         return queryset.filter(Q(modified=True))
+
     modified = CharFilter(method='filter_modified')
 
     def filter_published(self, queryset, name, value):
@@ -556,11 +563,11 @@ class ActivityFilter(TogetherFilterSet):
             return queryset.filter(Q(published=True))
         else:
             return queryset.filter(Q(published=False))
+
     published = CharFilter(method='filter_published')
 
     # modified = BooleanFilter(name='modified')
     # start_date_isnull = BooleanFilter(lookup_expr='isnull', name='start_date')
-
 
     class Meta:
         model = Activity
@@ -569,7 +576,6 @@ class ActivityFilter(TogetherFilterSet):
 
 
 class RelatedActivityFilter(FilterSet):
-
     related_activity_type = CommaSeparatedCharFilter(
         lookup_expr='in',
         name='type__code')
@@ -590,12 +596,13 @@ class RelatedOrderingFilter(filters.OrderingFilter):
     """
 
     def get_ordering(self, request, queryset, view):
-        ordering = super(RelatedOrderingFilter, self).get_ordering(request, queryset, view)
+        ordering = super(RelatedOrderingFilter, self).get_ordering(request, queryset,
+                                                                   view)
 
         always_ordering = getattr(view, 'always_ordering', None)
 
         if ordering and always_ordering:
-            ordering = ordering + [always_ordering] 
+            ordering = ordering + [always_ordering]
             queryset.distinct(always_ordering)
 
         return ordering
@@ -604,10 +611,10 @@ class RelatedOrderingFilter(filters.OrderingFilter):
 
         ordering = self.get_ordering(request, queryset, view)
 
-        if ordering: 
+        if ordering:
             ordering = [order.replace("-", "") for order in ordering]
 
-            if not 'iati_identifier' in ordering:
+            if 'iati_identifier' not in ordering:
                 queryset = queryset.distinct(*ordering)
 
         return super(RelatedOrderingFilter, self).filter_queryset(request, queryset, view)
@@ -657,7 +664,8 @@ class RelatedOrderingFilter(filters.OrderingFilter):
 
         for i, term in enumerate(ordering):
             if term.lstrip('-') in mapped_fields:
-                ordering[i] = ordering[i].replace(term.lstrip('-'), mapped_fields[term.lstrip('-')])
+                ordering[i] = ordering[i].replace(term.lstrip('-'),
+                                                  mapped_fields[term.lstrip('-')])
 
         return [term for term in ordering
                 if self.is_valid_field(queryset.model, term.lstrip('-'))]
