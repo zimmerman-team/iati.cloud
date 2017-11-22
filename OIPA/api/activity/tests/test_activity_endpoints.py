@@ -6,7 +6,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from iati.factory import iati_factory
 
-from iati.permissions.factories import OrganisationAdminGroupFactory, OrganisationUserFactory
+from iati.permissions.factories import OrganisationAdminGroupFactory, \
+    OrganisationUserFactory
+
 
 class TestActivityEndpoints(APITestCase):
     rf = RequestFactory()
@@ -20,7 +22,8 @@ class TestActivityEndpoints(APITestCase):
     def test_activities_endpoint(self):
         url = reverse('activities:activity-list')
         expect_url = '/api/activities/'
-        assert url == expect_url, msg.format('activities endpoint should be located at {0}')
+        msg = 'activities endpoint should be located at {0}'
+        assert url == expect_url, msg.format(expect_url)
         response = self.c.get(url)
         self.assertTrue(status.is_success(response.status_code))
 
@@ -38,7 +41,9 @@ class TestActivityEndpoints(APITestCase):
         msg = 'activity aggregations endpoint should be located at {0}'
         expect_url = '/api/activities/aggregations/'
         assert url == expect_url, msg.format(expect_url)
-        response = self.c.get(expect_url, {'group_by':'recipient_country', 'aggregations':'count'}, format='json')
+        response = self.c.get(expect_url,
+                              {'group_by': 'recipient_country', 'aggregations': 'count'},
+                              format='json')
         self.assertTrue(status.is_success(response.status_code))
 
     def test_transactions_endpoint(self):
