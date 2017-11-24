@@ -4,7 +4,7 @@ from api import views
 
 urlpatterns = [
     url(r'^$', views.welcome, name='api-root'),
-    url(r'^health-check/', views.health_check, name='api-health-check'), 
+    url(r'^health-check/', views.health_check, name='api-health-check'),
     url(r'^activities/', include('api.activity.urls', namespace='activities')),
     url(r'^documents/', include('api.documents.urls', namespace='documents')),
     url(r'^codelists/', include('api.codelist.urls', namespace='codelists')),
@@ -23,8 +23,9 @@ urlpatterns = [
     url(r'^publishers/', include('api.publisher.urls', namespace='publishers')),
     url(r'^chains/', include('api.chain.urls', namespace='chains')),
 
+    url(r'^csv_export/', include('api.csvexport.urls', namespace='csv-export')),
+
     # TODO: no email confirmation? - 2016-10-18
     url(r'^auth/', include('rest_auth.urls')),
     url(r'^auth/registration/', include('rest_auth.registration.urls')),
 ]
-
