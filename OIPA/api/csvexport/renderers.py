@@ -3,15 +3,16 @@ from api.renderers import PaginatedCSVRenderer
 
 
 class ActivityCSVRenderer(PaginatedCSVRenderer):
+    # mapping of Serializer field name -> CSV column label
     labels = OrderedDict([
         ('iati_identifier', 'iati-identifier'),
         ('hierarchy', 'hierarchy'),
         ('last_updated_datetime', 'last-updated-datetime'),
         ('default_lang', 'default-language'),
-        # ('reporting-org', 'reporting-org'),
-        # ('reporting-org-ref', 'reporting-org-ref'),
-        # ('reporting-org-type', 'reporting-org-type'),
-        # ('reporting-org-type-code', 'reporting-org-type-code'),
+        ('reporting_org', 'reporting-org'),
+        ('reporting_org_ref', 'reporting-org-ref'),
+        ('reporting-org_type', 'reporting-org-type'),
+        ('reporting-org_type_code', 'reporting-org-type-code'),
         # ('title', 'title'),
         # ('description', 'description'),
         ('activity_status_code', 'activity-status-code'),

@@ -169,6 +169,9 @@ class Activity(models.Model):
         auto_update_search_field = False, # TODO: make this compatible with M2M - 2016-01-11
     )
 
+    @property
+    def reporting_organisation(self):
+        return self.reporting_organisations.first()
 
 
     def __unicode__(self):

@@ -12,6 +12,11 @@ class ActivityCSVExportSerializer(ActivitySerializer):
     default_flow_type_code = CharField(source='default_flow_type.code', default='')
     default_tied_status_code = CharField(source='default_tied_status.code', default='')
 
+    reporting_org = CharField(source='reporting_organisation.organisation.primary_name', default='')
+    reporting_org_ref = CharField(source='reporting_organisation.ref', default='')
+    reporting_org_type = CharField(source='reporting_organisation.organisation.type.name', default='')
+    reporting_org_type_code = CharField(source='reporting_organisation.organisation.type.code', default='')
+
     class Meta(ActivitySerializer.Meta):
         model = Activity
         fields = (
@@ -29,4 +34,8 @@ class ActivityCSVExportSerializer(ActivitySerializer):
             'last_updated_datetime',
             'planned_end',
             'planned_start',
+            'reporting_org',
+            'reporting_org_ref',
+            'reporting_org_type',
+            'reporting_org_type_code'
         )
