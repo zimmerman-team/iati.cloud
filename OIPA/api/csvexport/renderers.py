@@ -20,6 +20,7 @@ class ActivityCSVRenderer(PaginatedCSVRenderer):
         ('actual_start', 'start-actual'),
         ('planned_end', 'end-planned'),
         ('planned_start', 'start-planned'),
+
         # ('participating-org (Accountable)', 'participating-org (Accountable)'),
         # ('participating-org-ref (Accountable)', 'participating-org-ref (Accountable)'),
         # ('participating-org-type (Accountable)', 'participating-org-type (Accountable)'),
@@ -28,8 +29,7 @@ class ActivityCSVRenderer(PaginatedCSVRenderer):
         # ('participating-org (Funding)', 'participating-org (Funding)'),
         # ('participating-org-ref (Funding)', 'participating-org-ref (Funding)'),
         # ('participating-org-type (Funding)', 'participating-org-type (Funding)'),
-        # (
-        # 'participating-org-type-code (Funding)', 'participating-org-type-code (Funding)'),
+        # ('participating-org-type-code (Funding)', 'participating-org-type-code (Funding)'),
         # ('participating-org (Extending)', 'participating-org (Extending)'),
         # ('participating-org-ref (Extending)', 'participating-org-ref (Extending)'),
         # ('participating-org-type (Extending)', 'participating-org-type (Extending)'),
@@ -37,16 +37,16 @@ class ActivityCSVRenderer(PaginatedCSVRenderer):
         #  'participating-org-type-code (Extending)'),
         # ('participating-org (Implementing)', 'participating-org (Implementing)'),
         # ('participating-org-ref (Implementing)', 'participating-org-ref (Implementing)'),
-        # (
-        # 'participating-org-type (Implementing)', 'participating-org-type (Implementing)'),
-        # ('participating-org-type-code (Implementing)',
-        #  'participating-org-type-code (Implementing)'),
-        # ('recipient-country-code', 'recipient-country-code'),
-        # ('recipient-country', 'recipient-country'),
-        # ('recipient-country-percentage', 'recipient-country-percentage'),
-        # ('recipient-region-code', 'recipient-region-code'),
-        # ('recipient-region', 'recipient-region'),
-        # ('recipient-region-percentage', 'recipient-region-percentage'),
+        # ('participating-org-type (Implementing)', 'participating-org-type (Implementing)'),
+        # ('participating-org-type-code (Implementing)', 'participating-org-type-code (Implementing)'),
+
+        ('recipient_country_code', 'recipient-country-code'),
+        ('recipient_country_description', 'recipient-country'),
+        ('recipient_country_percentage', 'recipient-country-percentage'),
+
+        ('recipient_region_code', 'recipient-region-code'),
+        ('recipient_region_description', 'recipient-region'),
+        ('recipient_region_percentage', 'recipient-region-percentage'),
 
         # ('sector_code', 'sector-code'),
         # ('sector', 'sector'),

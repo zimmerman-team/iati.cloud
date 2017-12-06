@@ -1,3 +1,4 @@
+from rest_framework.fields import get_attribute
 from rest_framework.serializers import CharField, SerializerMethodField
 
 from api.activity.serializers import ActivitySerializer
@@ -11,7 +12,6 @@ class MySerializerMethodField(SerializerMethodField):
         super(MySerializerMethodField, self).__init__(method_name, **kwargs)
 
     def to_representation(self, value):
-        from rest_framework.fields import get_attribute
         method = getattr(self.parent, self.method_name)
         value = method(value)
         val2 = get_attribute(value, self.inner_source.split('.'))
@@ -45,6 +45,14 @@ class ActivityCSVExportSerializer(ActivitySerializer):
     title = SerializerMethodField(default='')
     description = SerializerMethodField(default='')
 
+    recipient_country_code = SerializerMethodField(default='')
+    recipient_country_description = SerializerMethodField(default='')
+    recipient_country_percentage = SerializerMethodField(default='')
+
+    recipient_region_code = SerializerMethodField(default='')
+    recipient_region_description = SerializerMethodField(default='')
+    recipient_region_percentage = SerializerMethodField(default='')
+
     def get_reporting_organization(self, obj):
         return obj.reporting_organisations.first()
 
@@ -60,6 +68,41 @@ class ActivityCSVExportSerializer(ActivitySerializer):
             narrative = description.narratives.filter(language=obj.default_lang).first()
             if narrative is not None:
                 return narrative.content
+
+    def get_queryset_property_as_csv(self, queryset, attribute):
+        """Return a list of 'attribute' values as CSV based on a queryset"""
+        values = []
+        for rc in queryset:
+            val = get_attribute(rc, attribute.split('.'))
+            if val is not None:
+                values.append(unicode(val))
+            else:
+                values.append('')
+        return ';'.join(values)
+
+    def get_recipient_country_code(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_recipient_countries(),
+                                                 'country.code')
+
+    def get_recipient_country_description(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_recipient_countries(),
+                                                 'country.name')
+
+    def get_recipient_country_percentage(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_recipient_countries(),
+                                                 'percentage')
+
+    def get_recipient_region_code(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_recipient_regions(),
+                                                 'region.code')
+
+    def get_recipient_region_description(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_recipient_regions(),
+                                                 'region.name')
+
+    def get_recipient_region_percentage(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_recipient_regions(),
+                                                 'percentage')
 
     class Meta(ActivitySerializer.Meta):
         model = Activity
@@ -83,5 +126,12 @@ class ActivityCSVExportSerializer(ActivitySerializer):
             'reporting_org_type',
             'reporting_org_type_code',
             'title',
-            'description'
+            'description',
+            'recipient_country_code',
+            'recipient_country_description',
+            'recipient_country_percentage',
+            'recipient_region_code',
+            'recipient_region_description',
+            'recipient_region_percentage'
+
         )

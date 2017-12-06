@@ -69,7 +69,6 @@ class ActivitySearch(models.Model):
             GinIndex(fields=['search_vector_text'])
         ]
 
-
 class Activity(models.Model):
     hierarchy_choices = (
         (1, u"Parent"),
@@ -169,11 +168,6 @@ class Activity(models.Model):
         auto_update_search_field = False, # TODO: make this compatible with M2M - 2016-01-11
     )
 
-    @property
-    def reporting_organisation(self):
-        return self.reporting_organisations.first()
-
-
     def __unicode__(self):
         return self.iati_identifier
 
@@ -189,6 +183,11 @@ class Activity(models.Model):
             ["actual_end", "id"],
             ["end_date", "id"],
         ]
+
+    @property
+    def reporting_organisation(self):
+        return self.reporting_organisations.first()
+
 
     def get_activity(self):
         return self
@@ -213,6 +212,12 @@ class Activity(models.Model):
     @property
     def get_provided_activities(self):
         return Activity.objects.filter(transaction__provider_organisation__provider_activity=self.id).exclude(id=self.id).distinct()
+
+    def get_recipient_countries(self):
+        return self.activityrecipientcountry_set.all()
+
+    def get_recipient_regions(self):
+        return self.activityrecipientregion_set.all()
 
 
 class AbstractActivityAggregation(models.Model):
