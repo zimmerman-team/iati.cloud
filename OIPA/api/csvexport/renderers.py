@@ -60,8 +60,8 @@ class ActivityCSVRenderer(PaginatedCSVRenderer):
         ('default_flow_type_code', 'default-flow-type-code'),
         ('default_tied_status_code', 'default-tied-status-code'),
 
-        # ('default-currency', 'default-currency'),
-        # ('currency', 'currency'),
+        ('default_currency', 'default-currency'),
+        ('currency', 'currency'),
         # ('total-Commitment', 'total-Commitment'),
         # ('total-Disbursement', 'total-Disbursement'),
         # ('total-Expenditure', 'total-Expenditure'),

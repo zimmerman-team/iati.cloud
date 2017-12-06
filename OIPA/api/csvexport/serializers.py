@@ -20,8 +20,10 @@ class MySerializerMethodField(SerializerMethodField):
 
 class ActivityCSVExportSerializer(ActivitySerializer):
     activity_status_code = CharField(source='activity_status.code', default='')
+    currency = SerializerMethodField(default='')
     collaboration_type_code = CharField(source='collaboration_type.code', default='')
     default_aid_type_code = CharField(source='default_aid_type.code', default='')
+    default_currency = CharField(source='default_currency.code', default='')
     default_finance_type_code = CharField(source='default_finance_type.code', default='')
     default_flow_type_code = CharField(source='default_flow_type.code', default='')
     default_tied_status_code = CharField(source='default_tied_status.code', default='')
@@ -58,6 +60,15 @@ class ActivityCSVExportSerializer(ActivitySerializer):
     sector_percentage = SerializerMethodField(default='')
     sector_vocabulary = SerializerMethodField(default='')
     sector_vocabulary_code = SerializerMethodField(default='')
+
+    def get_currency(self, obj):
+        qs = obj.transaction_set.distinct('currency')
+        if qs.count() == 1:
+            transaction = obj.transaction_set.first()
+            if transaction is not None:
+                return transaction.currency.code
+        elif qs.count() > 1:
+            return u'Mixed currency!'
 
     def get_reporting_organization(self, obj):
         return obj.reporting_organisations.first()
@@ -136,7 +147,9 @@ class ActivityCSVExportSerializer(ActivitySerializer):
             'actual_end',
             'actual_start',
             'collaboration_type_code',
+            'currency',
             'default_aid_type_code',
+            'default_currency',
             'default_finance_type_code',
             'default_flow_type_code',
             'default_lang',
