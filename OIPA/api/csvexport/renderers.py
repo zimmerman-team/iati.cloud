@@ -48,11 +48,11 @@ class ActivityCSVRenderer(PaginatedCSVRenderer):
         ('recipient_region_description', 'recipient-region'),
         ('recipient_region_percentage', 'recipient-region-percentage'),
 
-        # ('sector_code', 'sector-code'),
-        # ('sector', 'sector'),
-        # ('sector-percentage', 'sector-percentage'),
-        # ('sector-vocabulary', 'sector-vocabulary'),
-        # ('sector-vocabulary-code', 'sector-vocabulary-code'),
+        ('sector_code', 'sector-code'),
+        ('sector_description', 'sector'),
+        ('sector_percentage', 'sector-percentage'),
+        ('sector_vocabulary', 'sector-vocabulary'),
+        ('sector_vocabulary_code', 'sector-vocabulary-code'),
 
         ('collaboration_type_code', 'collaboration-type-code'),
         ('default_aid_type_code', 'default-aid-type-code'),

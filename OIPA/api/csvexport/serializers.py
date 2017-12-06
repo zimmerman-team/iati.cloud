@@ -53,6 +53,12 @@ class ActivityCSVExportSerializer(ActivitySerializer):
     recipient_region_description = SerializerMethodField(default='')
     recipient_region_percentage = SerializerMethodField(default='')
 
+    sector_code = SerializerMethodField(default='')
+    sector_description = SerializerMethodField(default='')
+    sector_percentage = SerializerMethodField(default='')
+    sector_vocabulary = SerializerMethodField(default='')
+    sector_vocabulary_code = SerializerMethodField(default='')
+
     def get_reporting_organization(self, obj):
         return obj.reporting_organisations.first()
 
@@ -80,6 +86,8 @@ class ActivityCSVExportSerializer(ActivitySerializer):
                 values.append('')
         return ';'.join(values)
 
+    # recipient countries
+
     def get_recipient_country_code(self, obj):
         return self.get_queryset_property_as_csv(obj.get_recipient_countries(),
                                                  'country.code')
@@ -103,6 +111,23 @@ class ActivityCSVExportSerializer(ActivitySerializer):
     def get_recipient_region_percentage(self, obj):
         return self.get_queryset_property_as_csv(obj.get_recipient_regions(),
                                                  'percentage')
+
+    # sectors
+
+    def get_sector_code(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_sectors(), 'sector.code')
+
+    def get_sector_description(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_sectors(), 'sector.description')
+
+    def get_sector_percentage(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_sectors(), 'percentage')
+
+    def get_sector_vocabulary(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_sectors(), 'sector.vocabulary.name')
+
+    def get_sector_vocabulary_code(self, obj):
+        return self.get_queryset_property_as_csv(obj.get_sectors(), 'sector.vocabulary.code')
 
     class Meta(ActivitySerializer.Meta):
         model = Activity
@@ -132,6 +157,11 @@ class ActivityCSVExportSerializer(ActivitySerializer):
             'recipient_country_percentage',
             'recipient_region_code',
             'recipient_region_description',
-            'recipient_region_percentage'
+            'recipient_region_percentage',
 
+            'sector_code',
+            'sector_description',
+            'sector_percentage',
+            'sector_vocabulary',
+            'sector_vocabulary_code'
         )

@@ -219,6 +219,9 @@ class Activity(models.Model):
     def get_recipient_regions(self):
         return self.activityrecipientregion_set.all()
 
+    def get_sectors(self):
+        return self.activitysector_set.all()
+
 
 class AbstractActivityAggregation(models.Model):
     budget_value = models.DecimalField(
