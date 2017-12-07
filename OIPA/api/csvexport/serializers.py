@@ -1,8 +1,9 @@
-from rest_framework.fields import get_attribute
 from rest_framework.serializers import CharField, SerializerMethodField
 
 from api.activity.serializers import ActivitySerializer
+from api.csvexport.utils import get_attribute
 from iati.models import Activity
+from iati_organisation.models import OrganisationRole
 
 
 class MySerializerMethodField(SerializerMethodField):
@@ -89,8 +90,9 @@ class ActivityCSVExportSerializer(ActivitySerializer):
     def get_queryset_property_as_csv(self, queryset, attribute):
         """Return a list of 'attribute' values as CSV based on a queryset"""
         values = []
+        attributes = attribute.split('.')
         for rc in queryset:
-            val = get_attribute(rc, attribute.split('.'))
+            val = get_attribute(rc, attributes)
             if val is not None:
                 values.append(unicode(val))
             else:
@@ -135,10 +137,34 @@ class ActivityCSVExportSerializer(ActivitySerializer):
         return self.get_queryset_property_as_csv(obj.get_sectors(), 'percentage')
 
     def get_sector_vocabulary(self, obj):
-        return self.get_queryset_property_as_csv(obj.get_sectors(), 'sector.vocabulary.name')
+        return self.get_queryset_property_as_csv(obj.get_sectors(),
+                                                 'sector.vocabulary.name')
 
     def get_sector_vocabulary_code(self, obj):
-        return self.get_queryset_property_as_csv(obj.get_sectors(), 'sector.vocabulary.code')
+        return self.get_queryset_property_as_csv(obj.get_sectors(),
+                                                 'sector.vocabulary.code')
+
+    def to_representation(self, instance):
+        ret = super(ActivityCSVExportSerializer, self).to_representation(instance)
+
+        # add participating organisations
+        data = {}
+        fields = {
+            'name': 'primary_name',
+            'ref': 'ref',
+            'type': 'type.name',
+            'type-code': 'type.code',
+        }
+        qs = instance.participating_organisations.all()
+        roles = OrganisationRole.objects.all()
+        for role in roles:
+            for field, source in fields.iteritems():
+                key = "participating-org-{} ({})".format(field, role.name)
+                data[key] = self.get_queryset_property_as_csv(qs.filter(role=role),
+                                                              source)
+
+        ret.update(data)
+        return ret
 
     class Meta(ActivitySerializer.Meta):
         model = Activity
