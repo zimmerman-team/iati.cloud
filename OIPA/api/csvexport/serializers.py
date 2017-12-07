@@ -62,6 +62,14 @@ class ActivityCSVExportSerializer(ActivitySerializer):
     sector_vocabulary = SerializerMethodField(default='')
     sector_vocabulary_code = SerializerMethodField(default='')
 
+    total_commitment = CharField(source='activity_aggregation.commitment_value', default='')
+    total_disbursement = CharField(source='activity_aggregation.disbursement_value', default='')
+    total_expenditure = CharField(source='activity_aggregation.expenditure_value', default='')
+    total_incoming_funds = CharField(source='activity_aggregation.incoming_funds_value', default='')
+    total_interest_repayment = CharField(source='activity_aggregation.interest_payment_value', default='')
+    total_loan_repayment = CharField(source='activity_aggregation.loan_repayment_value', default='')
+    total_reimbursement = CharField(source='activity_aggregation.reimbursement_value', default='')
+
     def get_currency(self, obj):
         qs = obj.transaction_set.distinct('currency')
         if qs.count() == 1:
@@ -202,5 +210,13 @@ class ActivityCSVExportSerializer(ActivitySerializer):
             'sector_description',
             'sector_percentage',
             'sector_vocabulary',
-            'sector_vocabulary_code'
+            'sector_vocabulary_code',
+
+            'total_commitment',
+            'total_disbursement',
+            'total_expenditure',
+            'total_incoming_funds',
+            'total_interest_repayment',
+            'total_loan_repayment',
+            'total_reimbursement'
         )

@@ -60,13 +60,14 @@ class ActivityCSVRenderer(PaginatedCSVRenderer):
 
         ('default_currency', 'default-currency'),
         ('currency', 'currency'),
-        # ('total-Commitment', 'total-Commitment'),
-        # ('total-Disbursement', 'total-Disbursement'),
-        # ('total-Expenditure', 'total-Expenditure'),
-        # ('total-Incoming Funds', 'total-Incoming Funds'),
-        # ('total-Interest Repayment', 'total-Interest Repayment'),
-        # ('total-Loan Repayment', 'total-Loan Repayment'),
-        # ('total-Reimbursement', 'total-Reimbursement'),
+
+        ('total_commitment', 'total-Commitment'),
+        ('total_disbursement', 'total-Disbursement'),
+        ('total_expenditure', 'total-Expenditure'),
+        ('total_incoming_funds', 'total-Incoming Funds'),
+        ('total_interest_repayment', 'total-Interest Repayment'),
+        ('total_loan_repayment', 'total-Loan Repayment'),
+        ('total_reimbursement', 'total-Reimbursement'),
     ])
 
     header = labels.keys()
