@@ -4,6 +4,7 @@ import os
 from django.core.urlresolvers import reverse_lazy
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+CUSTOM_MAX_PAGE_SIZE = 400
 
 LOGIN_URL = reverse_lazy('two_factor:login')
 LOGOUT_URL = '/logout'

@@ -1,11 +1,13 @@
 
 from rest_framework import pagination
 from rest_framework.response import Response
+from django.conf import settings
+
 
 # TODO: Include 'last' link, see https://developer.github.com/guides/traversing-with-pagination/ - 2016-01-20
 class CustomPagination(pagination.PageNumberPagination):
     page_size = 10
-    max_page_size = 400 # TODO: change this to 100, makes more sense against ddos and such - 2016-01-20
+    max_page_size = settings.CUSTOM_MAX_PAGE_SIZE # TODO: change this to 100, makes more sense against ddos and such - 2016-01-20
     page_size_query_param = 'page_size'
 
 
