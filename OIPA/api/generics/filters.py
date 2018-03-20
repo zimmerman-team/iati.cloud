@@ -60,16 +60,14 @@ class DistanceFilter(filters.BaseFilterBackend):
 
 class SearchFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        print("Here 0")
         query = request.query_params.get('q', None)
         query_lookup = request.query_params.get('q_lookup', None)
         lookup_expr = 'exact' #'ft'
-        print("Here 1")
+        
         if query_lookup:
             lookup_expr = query_lookup
 
         if query:
-            print("Here 2")
             query_fields = request.query_params.get('q_fields')
             dict_query_list = [TSConfig('simple'), query]
 
@@ -77,66 +75,52 @@ class SearchFilter(filters.BaseFilterBackend):
 
             # when SearchFilter is used on other endpoints than activities, 
             # add activity__ to the filter name
-            print("Here 3")
             if Activity is not queryset.model:
                 model_prefix = 'activity__'
 
-            print("Here 4")
             # if root organisations set, only query searchable activities
             if settings.ROOT_ORGANISATIONS:
                 queryset = queryset.filter(**{'{0}is_searchable'.format(model_prefix): True})
 
-            print("Here 5")
             if query_fields:
                 query_fields = query_fields.split(',')
-                print("Here 6")
                 if isinstance(query_fields, list):
-                    print("Here 7")
                     filters = combine_filters([Q(**{'{0}activitysearch__{1}__{2}'.format(model_prefix, field, lookup_expr): dict_query_list}) for field in query_fields])
                     queryset.filter(filters)
-                    print("Here 9")
-
                     return queryset.filter(filters)
             else:
-                print("Here 7")
                 return queryset.filter(**{'{0}activitysearch__search_vector_text__{1}'.format(model_prefix, lookup_expr): query})
-        print("Here 8")
         return queryset
 
 
 class DocumentSearchFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        print("check 1")
         query = request.query_params.get('document_q', None)
         query_lookup = request.query_params.get('q_lookup', None)
         lookup_expr = 'ft'
-        print("check 2")
         if query_lookup:
             if query_lookup == 'exact':
                 lookup_expr = 'ft'
             if query_lookup == 'startswith':
                 lookup_expr = 'ft_startswith'
 
-        print("check 3")
         if query:
 
             query_fields = request.query_params.get('q_fields')
             dict_query_list = [TSConfig('simple'), query]
-            print("check 4")
             model_prefix = ''
 
             # when SearchFilter is used on other endpoints than activities, 
             # add activity__ to the filter name
             if Document is not queryset.model:
                 model_prefix = 'document__'
-                print("check 5")
+                
             # if root organisations set, only query searchable activities
             # if settings.ROOT_ORGANISATIONS:
             #     queryset = queryset.filter(**{'{0}is_searchable'.format(model_prefix): True})
 
-            print("check 6")
+            
             return queryset.filter(**{'{0}documentsearch__text__{1}'.format(model_prefix, lookup_expr): dict_query_list})
-        print("check 7")
         return queryset
 
 class CommaSeparatedCharFilter(CharFilter):
