@@ -596,19 +596,23 @@ class RelatedOrderingFilter(filters.OrderingFilter):
     """
 
     def get_ordering(self, request, queryset, view):
-        ordering = super(RelatedOrderingFilter, self).get_ordering(request, queryset, view)
-
+        ordering = super(RelatedOrderingFilter, self).get_ordering(queryset, view, request)
+        print("Right now 1")
         always_ordering = getattr(view, 'always_ordering', None)
+        print("Right now 2")
 
         if ordering and always_ordering:
             ordering = ordering + [always_ordering] 
+            print("Right now 3")
             queryset.distinct(always_ordering)
-
+            print("Right now 4")
+        print("Right now 5")
         return ordering
 
     def filter_queryset(self, request, queryset, view):
-
+        print("Before!!!!!!!!!!")
         ordering = self.get_ordering(request, queryset, view)
+        print("After!!!!!!!!!!!")
 
         if ordering: 
             ordering = [order.replace("-", "") for order in ordering]

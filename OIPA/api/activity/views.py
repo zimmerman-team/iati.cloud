@@ -437,7 +437,6 @@ class ActivityDetail(DynamicDetailView):
 
     """
 
-
     queryset = Activity.objects.all()
     filter_class = filters.ActivityFilter
     serializer_class = activity_serializers.ActivitySerializer
