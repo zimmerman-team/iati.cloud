@@ -388,7 +388,7 @@ class TransactionAggregation(AggregationView):
         ),
         GroupBy(
             query_param="provider_org",
-            fields=("provider_organisation__primary_name", 'provider_organisation__id'),
+            fields=("provider_organisation__primary_name", 'provider_organisation__organisation_identifier'),
             renamed_fields="provider_org",
             name_search_field="provider_organisation__primary_name",
             renamed_name_search_field="provider_org_name"
