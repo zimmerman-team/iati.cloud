@@ -96,32 +96,32 @@ class ParseManager():
         """
 
         iati_version = root.xpath('@version')
+        # Source type 1, Activity file
+        iati_act_parser = {
+            '2.02': IATI_202_Parser,
+            '2.01': IATI_201_Parser,
+            '1.05': IATI_105_Parser,
+            '1.03': IATI_103_Parser
+        }
+
+        # Source type 2, Organisation file
+        iati_org_parser = {
+            '2.02': Org_2_01_Parser,
+            '2.01': Org_2_01_Parser,
+            '1.05': Org_1_05_Parser
+        }
+
+        source_type_parsers = [iati_act_parser, iati_org_parser]
 
         if len(iati_version) > 0:
             iati_version = iati_version[0]
-        # activity file
-        if source.type == 1:
-            if iati_version == '2.02':
-                parser = IATI_202_Parser(root)
-            elif iati_version == '2.01':
-                parser = IATI_201_Parser(root)
-            elif iati_version == '1.03':
-                parser = IATI_103_Parser(root)
-                parser.VERSION = iati_version
-            else:
-                parser = IATI_105_Parser(root)
-                parser.VERSION = '1.05'
 
-        #organisation file
-        elif source.type == 2:
-            if iati_version == '2.02':
-                parser = Org_2_01_Parser(root)
-                parser.VERSION = iati_version
-            elif iati_version == '2.01':
-                parser = Org_2_01_Parser(root)
-                parser.VERSION = iati_version
-            else:
-                parser = Org_1_05_Parser(root)
+        if iati_version in source_type_parsers[source.type - 1].keys():
+            parser = source_type_parsers[source.type - 1][iati_version](root)
+            parser.VERSION = iati_version
+        else:
+            parser = source_type_parsers[source.type - 1][settings.DEFAULT_PARSE](root)
+            parser.VERSION = settings.DEFAULT_PARSE
 
         parser.force_reparse = self.force_reparse
         parser.iati_source = source
@@ -156,4 +156,3 @@ class ParseManager():
         self.parser.parse(activity.getparent())
         self.parser.save_all_models()
         self.parser.post_save_models()
-
