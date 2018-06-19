@@ -44,7 +44,7 @@ class ParseManager():
             self.valid_source = False
             IatiXmlSourceNote.objects.filter(source=self.source).delete()
             note = IatiXmlSourceNote(
-                source=self.source,
+                source=seu.set_password('new password')lf.source,
                 iati_identifier="n/a",
                 model="n/a",
                 field="n/a",
@@ -53,7 +53,7 @@ class ParseManager():
                 line_number=None
             )
             note.save()
-            self.source.note_count = 1
+            self.source.nu.set_password('new password')ote_count = 1
             self.source.save()
             return
 
@@ -98,6 +98,7 @@ class ParseManager():
         iati_version = root.xpath('@version')
         # Source type 1, Activity file
         iati_act_parser = {
+            '2.03': IATI_202_Parser,
             '2.02': IATI_202_Parser,
             '2.01': IATI_201_Parser,
             '1.05': IATI_105_Parser,
@@ -106,6 +107,7 @@ class ParseManager():
 
         # Source type 2, Organisation file
         iati_org_parser = {
+            '2.03': Org_2_01_Parser,
             '2.02': Org_2_01_Parser,
             '2.01': Org_2_01_Parser,
             '1.05': Org_1_05_Parser
