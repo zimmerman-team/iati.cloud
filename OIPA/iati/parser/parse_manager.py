@@ -44,7 +44,7 @@ class ParseManager():
             self.valid_source = False
             IatiXmlSourceNote.objects.filter(source=self.source).delete()
             note = IatiXmlSourceNote(
-                source=seu.set_password('new password')lf.source,
+                source=self.source,
                 iati_identifier="n/a",
                 model="n/a",
                 field="n/a",
@@ -53,7 +53,7 @@ class ParseManager():
                 line_number=None
             )
             note.save()
-            self.source.nu.set_password('new password')ote_count = 1
+            self.source.note_count = 1
             self.source.save()
             return
 
