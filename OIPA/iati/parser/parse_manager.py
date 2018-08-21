@@ -3,6 +3,7 @@ from IATI_2_01 import Parse as IATI_201_Parser
 from IATI_1_05 import Parse as IATI_105_Parser
 from IATI_1_03 import Parse as IATI_103_Parser
 from iati_organisation.parser.organisation_2_01 import Parse as Org_2_01_Parser
+from iati_organisation.parser.organisation_2_02 import Parse as Org_2_02_Parser
 from iati_organisation.parser.organisation_1_05 import Parse as Org_1_05_Parser
 from iati.filegrabber import FileGrabber
 from lxml import etree
@@ -95,35 +96,17 @@ class ParseManager():
             Prepares the parser, given the lxml activity file root
         """
 
-        iati_version = root.xpath('@version')
-        # Source type 1, Activity file
-        iati_act_parser = {
-            '2.03': IATI_202_Parser,
-            '2.02': IATI_202_Parser,
-            '2.01': IATI_201_Parser,
-            '1.05': IATI_105_Parser,
-            '1.03': IATI_103_Parser
-        }
+        # Always use 2.02 parser for DFID:
 
-        # Source type 2, Organisation file
-        iati_org_parser = {
-            '2.03': Org_2_01_Parser,
-            '2.02': Org_2_01_Parser,
-            '2.01': Org_2_01_Parser,
-            '1.05': Org_1_05_Parser
-        }
+        # activity file
+        if source.type == 1:
+            parser = IATI_202_Parser(root)
 
-        source_type_parsers = [iati_act_parser, iati_org_parser]
+        # organisation file
+        elif source.type == 2:
+            parser = Org_2_02_Parser(root),
 
-        if len(iati_version) > 0:
-            iati_version = iati_version[0]
-
-        if iati_version in source_type_parsers[source.type - 1].keys():
-            parser = source_type_parsers[source.type - 1][iati_version](root)
-            parser.VERSION = iati_version
-        else:
-            parser = source_type_parsers[source.type - 1][settings.DEFAULT_PARSE](root)
-            parser.VERSION = settings.DEFAULT_PARSE
+        parser.VERSION = settings.DEFAULT_PARSE  # 2.02
 
         parser.force_reparse = self.force_reparse
         parser.iati_source = source
@@ -135,7 +118,7 @@ class ParseManager():
 
     def parse_all(self):
         """
-        Parse all activities 
+        Parse all activities
         """
         # only start parsing when the file changed (or on force)
         if (self.force_reparse or self.hash_changed) and self.valid_source:
