@@ -220,7 +220,7 @@ class CodeListImporter():
                     date_updated=date_updated)
                 new_codelist.save()
 
-        cur_downloaded_xml = ("http://iatistandard.org/"
+        cur_downloaded_xml = ("http://reference.iatistandard.org/"
                               + self.looping_through_version.replace('.','') +
                               "/codelists/downloads/clv1/"
                               "codelist/" + name + ".xml")
@@ -233,7 +233,7 @@ class CodeListImporter():
 
     def loop_through_codelists(self, version):
         downloaded_xml = urllib2.Request(
-            "http://iatistandard.org/"
+            "http://reference.iatistandard.org/"
             + version.replace('.','') +
             "/codelists/downloads/clv1/codelist.xml")
 
