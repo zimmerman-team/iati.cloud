@@ -1,4 +1,5 @@
 git+https://github.com/zimmerman-zimmerman/djorm-ext-pgfulltext.git
+django==1.10.3
 django-supervisor==0.4.0
 django-nested-admin==2.2.6
 django-autocomplete-light==2.3.3
