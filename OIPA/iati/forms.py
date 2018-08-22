@@ -10,7 +10,7 @@ from iati.models import RelatedActivity
 from django.contrib.gis.geos import GEOSGeometry, Point
 from django.core.exceptions import ObjectDoesNotExist
 
-class NarrativeForm(ModelForm):
+class NarrativeForm(forms.ModelForm):
     activity = forms.ModelChoiceField(Activity.objects.none(), required=False, empty_label='----')
 
     class Meta(object):
@@ -67,7 +67,7 @@ class ActivityParticipatingOrganisationForm(forms.ModelForm):
         return data
 
 
-class DocumentLinkTitleForm(ModelForm):
+class DocumentLinkTitleForm(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super(DocumentLinkTitleForm, self).save(commit=False)
@@ -75,7 +75,7 @@ class DocumentLinkTitleForm(ModelForm):
         return instance
 
 
-class DocumentLinkForm(ModelForm):
+class DocumentLinkForm(forms.ModelForm):
     class Meta:
         model = DocumentLink
         exclude = ['']
@@ -140,7 +140,7 @@ class LocationForm(forms.ModelForm):
         return data
 
 
-class RelatedActivityForm(ModelForm):
+class RelatedActivityForm(forms.ModelForm):
 
     class Meta(object):
         model = RelatedActivity
