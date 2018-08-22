@@ -118,7 +118,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'grappelli',
     'django.contrib.admin',
-    'autocomplete_light',
     'django.contrib.admindocs',
     'django.contrib.gis',
     'corsheaders',

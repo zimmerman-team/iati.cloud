@@ -1,5 +1,4 @@
 from django import forms
-from autocomplete_light import forms as autocomplete_forms
 
 from iati.models import Narrative
 from iati.models import Activity
@@ -11,7 +10,7 @@ from iati.models import RelatedActivity
 from django.contrib.gis.geos import GEOSGeometry, Point
 from django.core.exceptions import ObjectDoesNotExist
 
-class NarrativeForm(autocomplete_forms.ModelForm):
+class NarrativeForm(ModelForm):
     activity = forms.ModelChoiceField(Activity.objects.none(), required=False, empty_label='----')
 
     class Meta(object):
@@ -68,7 +67,7 @@ class ActivityParticipatingOrganisationForm(forms.ModelForm):
         return data
 
 
-class DocumentLinkTitleForm(autocomplete_forms.ModelForm):
+class DocumentLinkTitleForm(ModelForm):
 
     def save(self, commit=True):
         instance = super(DocumentLinkTitleForm, self).save(commit=False)
@@ -76,7 +75,7 @@ class DocumentLinkTitleForm(autocomplete_forms.ModelForm):
         return instance
 
 
-class DocumentLinkForm(autocomplete_forms.ModelForm):
+class DocumentLinkForm(ModelForm):
     class Meta:
         model = DocumentLink
         exclude = ['']
@@ -141,7 +140,7 @@ class LocationForm(forms.ModelForm):
         return data
 
 
-class RelatedActivityForm(autocomplete_forms.ModelForm):
+class RelatedActivityForm(ModelForm):
 
     class Meta(object):
         model = RelatedActivity

@@ -2,10 +2,10 @@ import datetime
 
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django import forms
 from django.utils.html import format_html
 from django.core.exceptions import ObjectDoesNotExist
 
-from autocomplete_light import forms as autocomplete_forms
 import nested_admin
 
 from iati.forms import NarrativeForm
@@ -60,7 +60,7 @@ class TransactionProviderInline(nested_admin.NestedStackedInline):
     inline_classes = ('collapse open',)
     exclude = ('normalized_ref', 'organisation', 'provider_activity', 'primary_name')
 
-    form = autocomplete_forms.modelform_factory(TransactionProvider, fields='__all__')
+    form = forms.modelform_factory(TransactionProvider, fields='__all__')
     extra = 1
 
     def save_model(self, request, obj, form, change):
@@ -79,7 +79,7 @@ class TransactionReceiverInline(nested_admin.NestedStackedInline):
     inline_classes = ('collapse open',)
     exclude = ('normalized_ref', 'organisation', 'receiver_activity', 'primary_name')
 
-    form = autocomplete_forms.modelform_factory(TransactionReceiver, fields='__all__')
+    form = forms.modelform_factory(TransactionReceiver, fields='__all__')
 
     extra = 1
 
@@ -149,7 +149,7 @@ class TransactionInline(nested_admin.NestedStackedInline):
         'edit_transaction',)
     readonly_fields = ('edit_transaction', 'transaction_provider', 'transaction_receiver')
 
-    form = autocomplete_forms.modelform_factory(Transaction, fields='__all__')
+    form = forms.modelform_factory(Transaction, fields='__all__')
 
     def transaction_provider(self, obj):
         try:
@@ -189,7 +189,7 @@ class ActivityRecipientCountryInline(nested_admin.NestedStackedInline):
     inline_classes = ('collapse open',)
     extra = 6
 
-    form = autocomplete_forms.modelform_factory(ActivityRecipientCountry, fields='__all__')
+    form = forms.modelform_factory(ActivityRecipientCountry, fields='__all__')
 
 
 class ActivitySectorInline(nested_admin.NestedStackedInline):
@@ -198,7 +198,7 @@ class ActivitySectorInline(nested_admin.NestedStackedInline):
     inline_classes = ('collapse open',)
     extra = 6
 
-    form = autocomplete_forms.modelform_factory(Sector, fields='__all__')
+    form = forms.modelform_factory(Sector, fields='__all__')
 
 
 class ActivityRecipientRegionInline(nested_admin.NestedStackedInline):
@@ -230,7 +230,7 @@ class DocumentCategoryInline(nested_admin.NestedStackedInline):
     fields = ('document_link', 'category')
     extra = 1
 
-    form = autocomplete_forms.modelform_factory(DocumentCategory, fields='__all__')
+    form = forms.modelform_factory(DocumentCategory, fields='__all__')
 
 
 class DocumentLinkTitleInline(nested_admin.NestedStackedInline):
@@ -362,7 +362,7 @@ class ActivityAdmin(nested_admin.NestedAdmin):
         TransactionInline,
     ]
 
-    form = autocomplete_forms.modelform_factory(Activity, fields='__all__')
+    form = forms.modelform_factory(Activity, fields='__all__')
 
     def get_inline_instances(self, request, obj=None):
         if obj is None:
@@ -480,7 +480,7 @@ class TransactionAdmin(nested_admin.NestedAdmin):
         TransactionReceiverInline,
     ]
 
-    form = autocomplete_forms.modelform_factory(Transaction, fields='__all__')
+    form = forms.modelform_factory(Transaction, fields='__all__')
 
     def get_inline_instances(self, request, obj=None):
         if obj is None:
@@ -684,7 +684,7 @@ class ResultAdmin(nested_admin.NestedAdmin):
         ResultIndicatorInline,
     ]
 
-    form = autocomplete_forms.modelform_factory(Result, fields='__all__')
+    form = forms.modelform_factory(Result, fields='__all__')
 
     def get_inline_instances(self, request, obj=None):
         if obj is None:
