@@ -133,7 +133,7 @@ class FileFormat(models.Model):
 
 class FinanceTypeCategory(models.Model):
     code = models.CharField(max_length=10,  primary_key=True)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=200)
     description = models.TextField(default="")
 
     def __unicode__(self,):
