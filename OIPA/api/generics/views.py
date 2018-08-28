@@ -1,9 +1,13 @@
+import io
+
 from django.db.models.fields.related import ForeignKey, OneToOneField
+from django.http import HttpResponse
 from rest_framework import mixins
 from rest_framework.generics import (
     GenericAPIView, ListAPIView, ListCreateAPIView, RetrieveAPIView,
     RetrieveUpdateDestroyAPIView
 )
+from xlsxwriter.workbook import Workbook
 
 from api.generics.serializers import (
     DynamicFieldsModelSerializer, DynamicFieldsSerializer
@@ -98,6 +102,35 @@ class DynamicView(GenericAPIView):
         return super(DynamicView, self).get_serializer(
             fields=fields, *args, **kwargs
         )
+
+    def get(self, request, *args, **kwargs):
+
+        if request.GET.get('xxx'):  # kwarg, f. e. ?xxx=xlsx
+
+            # This contains our objects! TODO: write this to xls file:
+            # serializer = self.get_serializer(self.get_queryset(), many=True)
+            # data = serializer.data
+
+            output = io.BytesIO()
+
+            workbook = Workbook(output, {'in_memory': True})
+            worksheet = workbook.add_worksheet()
+            worksheet.write(0, 0, 'XXX')
+            workbook.close()
+
+            output.seek(0)
+
+            response = HttpResponse(
+                output.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # NOQA: E501
+            )
+            response['Content-Disposition'] = "attachment; filename=test.xlsx"
+
+            output.close()
+
+            return response
+
+        return self.list(request, *args, **kwargs)
 
 
 class DynamicListView(DynamicView, ListAPIView):
