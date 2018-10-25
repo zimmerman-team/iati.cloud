@@ -345,7 +345,7 @@ class HumanitarianScopeSerializer(DynamicFieldsModelSerializer):
     type = CodelistSerializer() 
     vocabulary = VocabularySerializer()
     vocabulary_uri = serializers.URLField()
-    code = CodelistSerializer()
+    code = serializers.CharField()
 
     class Meta:
         model = iati_models.HumanitarianScope
