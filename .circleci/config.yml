@@ -81,6 +81,7 @@ jobs:
     steps:
       - run:
           name: Add target host to known_hosts files
+          #TODO: generate ssh key in CircleCI UI and add it to droplet?
           command: |
             mkdir ~/.ssh
             ssh-keyscan "$SSH_HOST_YODA" >> ~/.ssh/known_hosts
