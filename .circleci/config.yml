@@ -83,7 +83,6 @@ jobs:
           name: Add target host to known_hosts files
           command: |
             mkdir ~/.ssh
-            mkdir ~/.ssh/known_hosts
             ssh-keyscan "$SSH_HOST_YODA" >> ~/.ssh/known_hosts
       #- run:
           #name: Add target host to known_hosts files
