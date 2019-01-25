@@ -73,7 +73,7 @@ jobs:
             . env/bin/activate
             flake8 OIPA
 
-  #TODO: in this step, deploy to ALL servers:
+  #TODO: in this step deploy to ALL servers:
   deploy:
     docker:
       - image: circleci/python:3.6.5
