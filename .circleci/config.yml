@@ -10,14 +10,7 @@ jobs:
         #- feature/circleci
 
     docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
       - image: circleci/python:3.6.5
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
 
     working_directory: ~/OIPA
 
@@ -79,3 +72,59 @@ jobs:
           command: |
             . env/bin/activate
             flake8 OIPA
+
+  #TODO: in this step, deploy to ALL servers:
+  deploy:
+    docker:
+      - image: circleci/python:3.6.5
+    working_directory: ~/OIPA
+    steps:
+      - run:
+          name: Add target host to known_hosts files
+          command: |
+            ssh-keyscan "$SSH_HOST_YODA" >> ~/.ssh/known_hosts
+      #- run:
+          #name: Add target host to known_hosts files
+          #command: |
+            #if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              #ssh-keyscan "$SSH_HOST_PRODUCTION" >> ~/.ssh/known_hosts
+            #elif [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              #ssh-keyscan "$SSH_HOST_STAGING" >> ~/.ssh/known_hosts
+            #elif [ "${CIRCLE_BRANCH}" == "feature" ]; then
+              #ssh-keyscan "$SSH_HOST_DEV" >> ~/.ssh/known_hosts
+            #else
+              #ssh-keyscan "$SSH_HOST_TEST" >> ~/.ssh/known_hosts
+            #fi
+      #- add_ssh_keys:
+          #name: Add SSH KEY
+          #fingerprints:
+            #- "6f:b2:10:8a:43:db:4b:fb:a0:31:47:da:99:68:7c:af"
+      #- run: eval ssh-agent -s
+      - run: sudo apt install rsync
+      - run:
+          name: Upload build folder to target host
+          command: |
+            rsync -ave  ssh ~/OIPA "$SSH_USER_YODA"@"$SSH_HOST_YODA":~/OIPA
+
+            #if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              #rsync -ave  ssh ~/UNESCO-UI/build "$SSH_USER"@"$SSH_HOST_PRODUCTION":~/test/UNESCO-UI
+            #elif [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              #rsync -ave  ssh ~/UNESCO-UI/build "$SSH_USER"@"$SSH_HOST_STAGING":~/UNESCO-UI
+            #elif [ "${CIRCLE_BRANCH}" == "feature" ]; then
+              #rsync -ave  ssh ~/UNESCO-UI/build "$SSH_USER"@"$SSH_HOST_DEV":~/dev/UNESCO-UI
+            #else
+              #rsync -ave  ssh ~/UNESCO-UI/build "$SSH_USER"@"$SSH_HOST_TEST":~/test/UNESCO-UI
+            #fi
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              #FIXME: this:
+              only: circleci-deployments
