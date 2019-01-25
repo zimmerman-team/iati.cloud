@@ -79,10 +79,10 @@ jobs:
       - image: circleci/python:3.6.5
     working_directory: ~/OIPA
     steps:
-      - run:
-          name: Add target host to known_hosts files
-          command: |
-            ssh-keyscan "$SSH_HOST_YODA" >> ~/.ssh/known_hosts
+      #- run:
+          #name: Add target host to known_hosts files
+          #command: |
+            #ssh-keyscan "$SSH_HOST_YODA" >> ~/.ssh/known_hosts
       #- run:
           #name: Add target host to known_hosts files
           #command: |
