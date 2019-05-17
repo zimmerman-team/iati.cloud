@@ -1,4 +1,4 @@
-import urllib2
+import urllib
 import logging
 import datetime
 from lxml import etree
@@ -230,21 +230,21 @@ class CodeListImporter():
                               "/codelists/downloads/clv1/"
                               "codelist/" + name + ".xml")
 
-        cur_file_opener = urllib2.build_opener()
-        cur_xml_file = cur_file_opener.open(cur_downloaded_xml)
+        response = self.get_xml(cur_downloaded_xml)
 
-        context2 = etree.iterparse(cur_xml_file, tag=name)
+        context2 = etree.iterparse(response, tag=name)
+
         self.fast_iter(context2, self.add_code_list_item)
 
     def loop_through_codelists(self, version):
-        downloaded_xml = urllib2.Request(
+        downloaded_xml = (
             "http://iatistandard.org/"
             + version.replace('.', '') +
             "/codelists/downloads/clv1/codelist.xml")
 
-        file_opener = urllib2.build_opener()
-        xml_file = file_opener.open(downloaded_xml)
-        context = etree.iterparse(xml_file, tag='codelist')
+        response = self.get_xml(downloaded_xml)
+        context = etree.iterparse(response, tag='codelist')
+
         self.fast_iter(context, self.get_codelist_data)
         self.add_missing_items()
 
@@ -253,3 +253,25 @@ class CodeListImporter():
 
         ssi = SdgSectorImporter()
         ssi.update()
+
+    @staticmethod
+    def get_xml(file_url):
+        try:
+            user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'  # NOQA: E501
+            headers = {'User-Agent': user_agent, }
+
+            request = urllib.request.Request(
+                file_url, None,
+                headers
+            )  # The assembled request
+
+            # TODO: please update this code releted to the below refrence
+            # https://docs.openstack.org/bandit/latest/api/bandit.blacklists.html#b310-urllib-urlopen  # NOQA: E501
+            response = urllib.request.urlopen(request)  # noqa: B310
+
+        except urllib.error.HTTPError:
+            raise Exception(
+                'Codelist URL not found: {0}'.format(file_url)
+            )
+
+        return response
