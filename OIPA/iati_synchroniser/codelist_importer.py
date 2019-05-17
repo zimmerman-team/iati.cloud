@@ -1,4 +1,4 @@
-import urllib
+import urllib2
 import logging
 import datetime
 from lxml import etree
@@ -260,16 +260,17 @@ class CodeListImporter():
             user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'  # NOQA: E501
             headers = {'User-Agent': user_agent, }
 
-            request = urllib.request.Request(
-                file_url, None,
+            request = urllib2.Request(
+                file_url,
+                None,
                 headers
             )  # The assembled request
 
             # TODO: please update this code releted to the below refrence
             # https://docs.openstack.org/bandit/latest/api/bandit.blacklists.html#b310-urllib-urlopen  # NOQA: E501
-            response = urllib.request.urlopen(request)  # noqa: B310
+            response = urllib2.urlopen(request)  # noqa: B310
 
-        except urllib.error.HTTPError:
+        except urllib2.HTTPError:
             raise Exception(
                 'Codelist URL not found: {0}'.format(file_url)
             )
