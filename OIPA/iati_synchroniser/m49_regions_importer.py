@@ -59,6 +59,11 @@ class M49RegionsImporter:
         )
 
     def loop_through(self, data):
+        # Update world
+        item = {'code': '1', 'name': 'World'}
+        self.get_or_create(item=item)
+
+        # Updated other regions
         for item in data:
             # Create a new region data
             self.get_or_create(item=item)
