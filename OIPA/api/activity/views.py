@@ -365,6 +365,7 @@ class ActivityList(CacheResponseMixin, DynamicListView):
     ordering_fields = (
         'title',
         'recipient_country',
+        'recipient_region',
         'planned_start_date',
         'actual_start_date',
         'planned_end_date',
