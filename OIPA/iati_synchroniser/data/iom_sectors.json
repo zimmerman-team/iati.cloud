@@ -36,8 +36,20 @@
     "description":	"Camp Coordination and Camp Management"
   },
   {
+    "code": "CD",
+    "description":	"Community Development and Empowerment"
+  },
+  {
+    "code": "CE",
+    "description": "Community and Economic Development"
+  },
+  {
     "code": "CS",
-    "description": "Community Stabilization"
+    "description":	"Community Stabilization"
+  },
+  {
+    "code": "CT",
+    "description":	"Counter Trafficking"
   },
   {
     "code": "DP",
@@ -72,6 +84,62 @@
     "description":	"Former Combatants"
   },
   {
+    "code": "FM",
+    "description": "Migrant Training and Integration"
+  },
+  {
+    "code": "HA",
+    "description":	"Humanitarian Assistance to Victims"
+  },
+  {
+    "code": "IB",
+    "description":	"Immigration and Borders"
+  },
+  {
+    "code": "IS",
+    "description":	"Integration and Social Cohesion"
+  },
+  {
+    "code": "IM",
+    "description":	"International Migration Law"
+  },
+  {
+    "code": "IV",
+    "description":	"Immigratin and Visas"
+  },
+  {
+    "code": "LM",
+    "description":	"Labour Migration"
+  },
+  {
+    "code": "LP",
+    "description":	"Land and Property"
+  },
+  {
+    "code": "MA",
+    "description":	"Health Promotion and Assistance for Migrants"
+  },
+  {
+    "code": "MD",
+    "description":	"Mainstreaming Migration into Development"
+  },
+  {
+    "code": "MH",
+    "description":	"Migratant Health Assessment and Travel Assistance"
+  },
+  {
+    "code": "MP",
+    "description":	"Migr Health Assist for Crisis Aff Pops"
+  },
+  {
+    "code": "MS",
+    "description":	"Migration Management Support"
+  },
+  {
+    "code": "NC",
+    "description":	"Migration, Environment and Climate Change"
+  },
+  {
     "code": "OC",
     "description":	"Out of Country Voting"
   },
@@ -81,83 +149,19 @@
   },
   {
     "code": "PB",
-    "description": "Peacebuilding and Peace Preservation"
+    "description":	"Peacebuilding and Peace Preservation"
   },
   {
     "code": "PE",
-    "description":	"Addressing Violent Extremism"
+    "description":	"Addressing Vilolent Extremism"
   },
   {
-    "code": "RA",
-    "description":	"Repatriation Assistance"
+    "code": "PM",
+    "description":	"Media and Communications"
   },
   {
-    "code": "RE",
-    "description":	"Resettlement Assistance"
-  },
-  {
-    "code": "RX",
-    "description":	"Emerging Resettlement Countries Joint Support Mechanism (ERCM) Activities"
-  },
-  {
-    "code": "SN",
-    "description":	"Emergency Shelter and NFI"
-  },
-  {
-    "code": "MA",
-    "description":	"Health Promotion and Assist for Migrants"
-  },
-  {
-    "code": "MH",
-    "description":	"Migr Health Assess and Travel Assistance"
-  },
-  {
-    "code": "MP",
-    "description":	"Migr Health Assist for Crisis Aff Pops"
-  },
-  {
-    "code": "CE",
-    "description":	"Community and Economic Development"
-  },
-  {
-    "code": "NC",
-    "description":	"Migration, Environment and Climate Change"
-  },
-  {
-    "code": "RM",
-    "description":	"Remittances"
-  },
-  {
-    "code": "RQ",
-    "description":	"CB Through Qualified Human Resources"
-  },
-  {
-    "code": "CT",
-    "description":	"Counter Trafficking"
-  },
-  {
-    "code": "IB",
-    "description":	"Immigration and Borders"
-  },
-  {
-    "code": "RT",
-    "description":	"Return Assistance to Migrants & Govt."
-  },
-  {
-    "code": "TC",
-    "description":	"TCMMCB"
-  },
-  {
-    "code": "FM",
-    "description":	"Migrant Processing and Integration"
-  },
-  {
-    "code": "IV",
-    "description":	"Immigration and Visas"
-  },
-  {
-    "code": "LM",
-    "description":	"Labour Migration"
+    "code": "PO",
+    "description":	"Migration Policy Activities"
   },
   {
     "code": "PM",
@@ -172,59 +176,55 @@
     "description":	"Migration Research and Publications"
   },
   {
-    "code": "HA",
-    "description":	"Humanitarian Assistance to Victims"
+    "code": "PX",
+    "description":	"Protection and Assistance to Vulnerable Migrants"
   },
   {
-    "code": "LP",
-    "description":	"Land and Property"
+    "code": "RA",
+    "description":	"Repatriation Assistance"
+  },
+  {
+    "code": "RE",
+    "description":	"Resettlement Assistance"
+  },
+  {
+    "code": "RM",
+    "description":	"Remittances"
   },
   {
     "code": "RP",
     "description":	"Reparations"
   },
   {
-    "code": "IM",
-    "description":	"International Migration Law"
+    "code": "RQ",
+    "description":	"Community Building throught Qualified Human Resources"
   },
   {
-    "code": "MI",
-    "description":	"Miscellaneous"
+    "code": "RR",
+    "description":	"Return and Reintegration Assistance for Migrants and Governments"
   },
   {
-    "code": "MJ",
-    "description":	"Miscellaneous Internal Service Fee Admin"
+    "code": "RT",
+    "description":	"Return and Reintegration Assistance for Migrants and Governments"
   },
   {
-    "code": "MK",
-    "description":	"Miscellaneous Activities funded by Voluntary Contribution"
-  },
-  {
-    "code": "ML",
-    "description":	"Miscellaneous - Sublease/ Lease/ Sales"
+    "code": "RX",
+    "description":	"Emerging Resettlement Countries Joint Support Mechanism (ERCM) Activities"
   },
   {
     "code": "SM",
     "description":	"Humanitarian Assistance to Stranded Migrants"
   },
   {
-    "code": "SS",
-    "description":	"Seconded Staff"
+    "code": "SN",
+    "description":	"Emergency Shelter and Non-Food Items (NFI)"
   },
   {
-    "code": "DM",
-    "description":	"Staff and Services DI"
+    "code": "TC",
+    "description":	"Immigration and Border Management"
   },
   {
-    "code": "OS",
-    "description":	"Operational Support Income - Core Staff & Security"
-  },
-  {
-    "code": "AD",
-    "description":	"Administrative budget"
-  },
-  {
-    "code": "CD",
-    "description":	"Community Development and Empowerment"
+    "code": "TK",
+    "description":	"Transfer of Migrant Knowledge and Resources"
   }
 ]
