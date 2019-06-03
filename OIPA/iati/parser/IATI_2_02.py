@@ -860,7 +860,7 @@ class Parse(IatiParser):
         percentage:25
 
         tag:recipient-region"""
-        code = element.attrib.get('code')
+        code = element.attrib.get('code').replace(" ", "")
         region = self.get_or_none(Region, code=code)
         # TODO: make defaults more transparant, here: 'OECD-DAC default'
         vocabulary = self.get_or_none(
