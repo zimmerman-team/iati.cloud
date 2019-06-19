@@ -76,6 +76,7 @@ class OrganisationList(CacheResponseMixin, DynamicListView):
         OrganisationIATIXMLRenderer,
     )
     queryset = Organisation.objects.all()
+    selectable_fields = ()
     serializer_class = serializers.OrganisationSerializer
     fields = ('url', 'organisation_identifier',
               'last_updated_datetime', 'name')
