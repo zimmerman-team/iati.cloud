@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
-from rest_framework_extensions.cache.decorators import cache_response
 
 from api.generics.views import SaveAllSerializer
 from api.activity import serializers as activity_serializers
@@ -577,6 +576,57 @@ class ActivityListCRUD(UpdateActivitySearchMixin, FilterPublisherMixin,
         'activity_disbursement_value',
         'activity_expenditure_value',
         'activity_plus_child_budget_value')
+
+
+class ActivityTransactionListByIatiIdentifier(DynamicListView):
+    """
+    Returns a list of IATI Activity Transactions stored in OIPA.
+    ## URI Format
+    ```
+    /api/activities/{iati_identifier}/transactions
+    ```
+    ### URI Parameters
+    - `iati_identifier`: Desired activity IATI identifier
+    ## Request parameters:
+    - `recipient_country` (*optional*): Recipient countries list.
+        Comma separated list of strings.
+    - `recipient_region` (*optional*): Recipient regions list.
+        Comma separated list of integers.
+    - `sector` (*optional*): Sectors list. Comma separated list of integers.
+    - `sector_category` (*optional*): Sectors list. Comma separated list of integers.
+    - `reporting_organisations` (*optional*): Organisation ID's list.
+    - `participating_organisations` (*optional*): Organisation IDs list.
+        Comma separated list of strings.
+    - `min_total_budget` (*optional*): Minimal total budget value.
+    - `max_total_budget` (*optional*): Maximal total budget value.
+    - `activity_status` (*optional*):
+    - `related_activity_id` (*optional*):
+    - `related_activity_type` (*optional*):
+    - `related_activity_recipient_country` (*optional*):
+    - `related_activity_recipient_region` (*optional*):
+    - `related_activity_sector` (*optional*):
+    ## Searching is performed on fields:
+    - `description`
+    - `provider_organisation_name`
+    - `receiver_organisation_name`
+    """  # NOQA: E501
+    serializer_class = TransactionSerializer
+    filter_class = TransactionFilter
+
+    def get_queryset(self):
+        # Override default get query to get transaction list by primary key of
+        # the activity
+        iati_identifier = self.kwargs.get('iati_identifier')
+        try:
+            return Activity.objects.get(iati_identifier=iati_identifier).\
+                transaction_set.all().order_by('id')
+        except Activity.DoesNotExist:
+            return Transaction.objects.none().order_by('id')
+
+    def dispatch(self, *args, **kwargs):
+        return super(ActivityTransactionListByIatiIdentifier, self).dispatch(
+            *args, **kwargs
+        )
 
 
 class ActivityDetailCRUD(UpdateActivitySearchMixin, DynamicDetailCRUDView):
