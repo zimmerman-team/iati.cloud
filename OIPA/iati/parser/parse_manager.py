@@ -109,6 +109,8 @@ class ParseManager():
         if dataset.filetype == 1:
             if iati_version == '2.02':
                 parser = IATI_202_Parser(root)
+            elif iati_version == '2.03':
+                parser = IATI_202_Parser(root)
             elif iati_version == '2.01':
                 parser = IATI_201_Parser(root)
             elif iati_version == '1.03':
