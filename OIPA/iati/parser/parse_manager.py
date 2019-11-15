@@ -144,14 +144,6 @@ class ParseManager():
             elif iati_version == '2.01':
                 parser = IATI_201_Parser(root)
 
-            elif iati_version == '1.03':
-                parser = IATI_103_Parser(root)
-                parser.VERSION = iati_version
-
-            else:
-                parser = IATI_105_Parser(root)
-                parser.VERSION = '1.05'
-
         # organisation file
         elif dataset.filetype == 2:
             if iati_version == '2.03':
