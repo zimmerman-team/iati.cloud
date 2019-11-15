@@ -95,6 +95,11 @@ class ParseManager():
             parser = etree.XMLParser(huge_tree=True, encoding='utf-8')
             tree = etree.parse(BytesIO(response.content), parser)
             self.root = tree.getroot()
+
+            iati_version = root.xpath('@version')
+            if iati_version not in ['2.01', '2.02', '2.03']:
+                return
+
             self.parser = self._prepare_parser(self.root, dataset)
 
             if settings.ERROR_LOGS_ENABLED:
@@ -143,6 +148,14 @@ class ParseManager():
 
             elif iati_version == '2.01':
                 parser = IATI_201_Parser(root)
+
+            elif iati_version == '1.03':
+                parser = IATI_103_Parser(root)
+                parser.VERSION = iati_version
+
+            else:
+                parser = IATI_105_Parser(root)
+                parser.VERSION = '1.05'
 
         # organisation file
         elif dataset.filetype == 2:
