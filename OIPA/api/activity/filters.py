@@ -721,10 +721,14 @@ class RelatedOrderingFilter(filters.OrderingFilter):
             'start_date': 'start_date',
             'end_date': 'end_date',
             'xml_source_ref': 'xml_source_ref',
-            'transactionbalance_total_budget': 'transactionbalance__total_budget',
-            'transactionbalance_total_expenditure': 'transactionbalance__total_expenditure',
-            'transactionbalance_cumulative_budget': 'transactionbalance__cumulative_budget',
-            'transactionbalance_cumulative_expenditure': 'transactionbalance__cumulative_expenditure',
+            'transactionbalance_total_budget':
+                'transactionbalance__total_budget',
+            'transactionbalance_total_expenditure':
+                'transactionbalance__total_expenditure',
+            'transactionbalance_cumulative_budget':
+                'transactionbalance__cumulative_budget',
+            'transactionbalance_cumulative_expenditure':
+                'transactionbalance__cumulative_expenditure',
         }
 
         for i, term in enumerate(ordering):
