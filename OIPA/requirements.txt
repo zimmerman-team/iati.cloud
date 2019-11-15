@@ -1,155 +1,125 @@
-##################
-# Core libraries #
-##################
-
-# An API for interacting with the Comprehensive Knowledge Archive Network (CKAN):
-ckanapi==4.1
-
+amqp==2.5.2
+apipkg==1.5
+argh==0.26.2
+atomicwrites==1.3.0
+attrs==19.1.0
+backcall==0.1.0
+beautifulsoup4==4.7.1
+billiard==3.6.1.0
+bleach==3.1.0
+bs4==0.0.1
 celery==4.3.0
-
-Django==2.0.13
-
-django-grappelli==2.11.1
-
-# Adding CORS headers to responses, only allowing certain API methods:
-django-cors-headers==2.2.0
-
-# Reorder apps in Django-admin:
-django-modeladmin-reorder==0.3.1
-
-# Define Redis queues in Django:
-django-rq==1.1.0
-
-# A temporary workaround for DRF-related error:
-Markdown~=2.6
-
-djangorestframework==3.8.2
-
-djangorestframework-csv==2.1.0
-
-drf-extensions==0.3.1
-
-# Dynamic filters for DRF:
-django-filter==1.1.0
-django-formtools==2.1 # dependency of two_factor
-django-otp-yubikey==0.4.2
-django-otp==0.4.2
-
-# A Redis cache backend for Django:
-django-redis-cache==1.7.1
-
-django-rest-auth[with_social]==0.9.3
-
-django-test-without-migrations==0.6
-
-djangorestframework-xml==1.3.0
-
-# Render markdown to HTML
-django-markdownify
-
-# PostgreSQL full-text search integration with django orm.
-djorm-ext-pgfulltext==0.10
-
-# Extract text from various documents:
-fulltext==0.5
-
-gunicorn==19.9.0
-
-# A library for interacting with websites (Requests + BeautifulSoup):
-MechanicalSoup==0.10.0
-
-# Mock objects for testing:
-mock==2.0.0
-
-# Factories for testing:
-factory-boy==2.11.1
-
-# Working with XML files
-lxml==4.2.1
-
-# Extensions to the standard datetime module:
-python-dateutil==2.7.3
-
-# Reading the key,value pair from .env file and adding them to environment variable:
-python-dotenv==0.8.2
-
-psycopg2-binary
-
-# Django plugin for Pytest
-pytest-django
-
-# Distributed testing for Pytest
-pytest-xdist
-
-# Test coverage plugin for Pytest
-coverage==4.5.2
-pytest-cov==2.6.1
-
-# A library for sending test coverage reports to Codacy
+certifi==2019.3.9
+chardet==3.0.4
+ckanapi==4.1
+Click==7.0
 codacy-coverage==1.3.11
-
-redis==2.10.6
-
-requests==2.20.0
-
-# Redis-based Python queuing library for queueing jobs and processing them in
-# the background with workers:
-rq==0.12.0
-
-# Job scheduling capabilities for RQ
-rq-scheduler==0.8.3
-
-# Getting local time zone:
-tzlocal==1.5.1
-
-# JSON decoder and encoder
-ujson==1.35
-
-uwsgi==2.0.17
-
-# Use the latest version of Supervisor (4.0.0.dev0) from Github, because it's
-# not yet in PyPI:
-git+https://github.com/Supervisor/supervisor@ec495be4e28c694af1e41514e08c03cf6f1496c8#egg=supervisor
-
-# Use patched version (0.4.0) of Django-supervisor which has support for Python3:
-git+https://github.com/zimmerman-zimmerman/django-supervisor@07c67b4daebe4ebae5eb1c5567c11e076e58692d#egg=django-supervisor
-
-###########################################
-# Developer / debugging related libraries #
-###########################################
-
-# mainly used for 'shell_plus' management command:
-django-extensions==2.0.7
-
+coverage==4.5.2
+croniter==0.3.27
+decorator==4.3.2
+defusedxml==0.5.0
+Django==2.0.13
+django-allauth==0.39.1
+django-cors-headers==2.2.0
+django-crontab==0.7.1
 django-debug-toolbar==1.9.1
-
-# Interactive Python debugger:
-ipdb==0.11
-
-# Code profiling:
-yet_another_django_profiler==1.1.0
-
-# JSON logs for DataDog logging interface:
-python-json-logger==0.1.9
-
-################
-# Code quality #
-################
-
+django-extensions==2.0.7
+django-filter==1.1.0
+django-formtools==2.1
+django-grappelli==2.11.1
+django-markdownify==0.8.0
+django-modeladmin-reorder==0.3.1
+django-otp==0.4.2
+django-otp-yubikey==0.4.2
+django-redis-cache==1.7.1
+django-rest-auth==0.9.3
+django-rq==1.1.0
+django-supervisor==0.4.0
+django-test-without-migrations==0.6
+djangorestframework==3.8.2
+djangorestframework-csv==2.1.0
+djangorestframework-stubs==0.3.0
+djangorestframework-xml==1.3.0
+djorm-ext-pgfulltext==0.10
+docopt==0.6.2
+docx2txt==0.7
+drf-extensions==0.3.1
+execnet==1.5.0
+factory-boy==2.11.1
+Faker==1.0.2
 flake8==3.5.0
-
 flake8-isort==2.5
-
+fulltext==0.5
+gunicorn==19.9.0
+idna==2.6
+importlib-metadata==0.23
+ipdb==0.11
+ipython==7.3.0
+ipython-genutils==0.2.0
 isort==4.3.4
-
-################
-# Cached #
-################
-
-python3-memcached==1.51
-
-################
-# SOLR #
-################
-
+jedi==0.13.3
+kombu==4.6.6
+lxml==4.2.1
+Markdown==2.6.11
+mccabe==0.6.1
+MechanicalSoup==0.10.0
+meld3==1.0.2
+mock==2.0.0
+more-itertools==6.0.0
+oauthlib==3.0.1
+parso==0.3.4
+pathtools==0.1.2
+pbr==5.1.3
+pexpect==4.6.0
+pickleshare==0.7.5
+Pillow==5.4.1
+pluggy==0.9.0
+prompt-toolkit==2.0.9
+psycopg2-binary==2.7.7
+ptyprocess==0.6.0
+py==1.8.0
+pycodestyle==2.3.1
+pycryptodome==3.7.3
+pyflakes==1.6.0
+Pygments==2.3.1
 pysolr==3.8.1
+pytest==4.3.0
+pytest-cov==2.6.1
+pytest-django==3.4.8
+pytest-forked==1.0.2
+pytest-xdist==1.26.1
+python-dateutil==2.7.3
+python-dotenv==0.8.2
+python-json-logger==0.1.9
+python-pptx==0.6.17
+python3-memcached==1.51
+python3-openid==3.1.0
+pytz==2018.9
+PyYAML==3.13
+redis==2.10.6
+requests==2.20.0
+requests-oauthlib==1.2.0
+rq==0.12.0
+rq-scheduler==0.8.3
+sh==1.12.14
+six==1.12.0
+soupsieve==1.8
+sqlparse==0.3.0
+supervisor==4.0.0.dev0
+testfixtures==6.6.0
+text-unidecode==1.2
+traitlets==4.3.2
+tzlocal==1.5.1
+ujson==1.35
+unicodecsv==0.14.1
+urllib3==1.22
+uWSGI==2.0.17
+vine==1.3.0
+watchdog==0.9.0
+wcwidth==0.1.7
+webencodings==0.5.1
+xlrd==1.2.0
+XlsxWriter==1.1.5
+yet-another-django-profiler==1.1.0
+YubiOTP==0.2.2
+zipp==0.6.0

@@ -11,6 +11,7 @@ from rq.registry import FinishedJobRegistry
 from rq_scheduler import Scheduler
 
 from iati.PostmanJsonImport import tasks as celery_task
+from scripts import tasks as backup_celery_task
 from task_queue import tasks
 
 # TODO: all these custok views have to be tested, see: #968
@@ -27,6 +28,9 @@ def add_task(request):
     # this is for cellery task. There are only one task for celery currently.
     if task == 'get_postman_api':
         func = getattr(celery_task, task)
+        func.delay()  # calling celery task, which is 'get_postman_api' here.
+    elif task == 'creating_backups':
+        func = getattr(backup_celery_task, task)
         func.delay()  # calling celery task, which is 'get_postman_api' here.
     else:
         func = getattr(tasks, task)

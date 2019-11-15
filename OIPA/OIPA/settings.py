@@ -357,6 +357,8 @@ DATA_PLUGINS = {}
 # not:
 DOWNLOAD_DATASETS = False
 
+ENVIRONMENT = "development"
+
 # CELERY CONFIG
 
 CELERY_BROKER_URL = 'amqp://localhost'
@@ -368,6 +370,10 @@ CELERY_BEAT_SCHEDULE = {
     'getting_postman-api': {
         'task': 'iati.PostmanJsonImport.tasks.get_postman_api',
         'schedule': crontab(minute=0, hour=0),
+    },
+    'creating_backups': {
+        'task': 'scripts.tasks.create_backups',
+        'schedule': crontab(minute="*"),
     },
 }
 
