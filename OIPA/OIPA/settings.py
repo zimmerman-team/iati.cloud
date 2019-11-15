@@ -373,7 +373,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'creating_backups': {
         'task': 'scripts.tasks.create_backups',
-        'schedule': crontab(minute="*"),
+        'schedule': crontab(minute=0, hour=0),
     },
 }
 
