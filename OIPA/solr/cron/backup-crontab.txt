@@ -1,0 +1,23 @@
+# Please create directory subdirectory 'cron' in '/run'
+# and copy files 'backup.sh' & 'backup-zip.sh' to it.
+# Then copy below text to crontab with command 'crontab -e'
+0 0 * * * /run/cron/backup.sh activity
+0 0 * * * /run/cron/backup.sh budget
+0 0 * * * /run/cron/backup.sh country
+0 0 * * * /run/cron/backup.sh dataset
+0 0 * * * /run/cron/backup.sh datasetnote
+0 0 * * * /run/cron/backup.sh organisation
+0 0 * * * /run/cron/backup.sh publisher
+0 0 * * * /run/cron/backup.sh region
+0 0 * * * /run/cron/backup.sh result
+0 0 * * * /run/cron/backup.sh transaction
+0 4 * * * /run/cron/backup-zip.sh activity
+0 4 * * * /run/cron/backup-zip.sh budget
+0 4 * * * /run/cron/backup-zip.sh country
+0 4 * * * /run/cron/backup-zip.sh dataset
+0 4 * * * /run/cron/backup-zip.sh datasetnote
+0 4 * * * /run/cron/backup-zip.sh organisation
+0 4 * * * /run/cron/backup-zip.sh publisher
+0 4 * * * /run/cron/backup-zip.sh region
+0 4 * * * /run/cron/backup-zip.sh result
+0 4 * * * /run/cron/backup-zip.sh transaction
