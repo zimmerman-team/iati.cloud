@@ -392,8 +392,11 @@ class TransactionAggregation(AggregationView):
         GroupBy(
             query_param="participating_organisation",
             fields=("activity__participating_organisations__primary_name",
-                    "activity__participating_organisations__normalized_ref"),
-            renamed_fields=("participating_organisation", "participating_organisation_ref"),
+                    "activity__participating_organisations__normalized_ref",
+                    "activity__participating_organisations__role_id"),
+            renamed_fields=("participating_organisation",
+                            "participating_organisation_ref",
+                            "participating_organisation_role"),
             queryset=ActivityParticipatingOrganisation.objects.all(),
             name_search_field="activity__participating_organisations__primary_name",
             renamed_name_search_field="participating_organisation_name"
