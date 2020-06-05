@@ -2,12 +2,15 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
+from django_otp.admin import OTPAdminSite
+from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
 from OIPA import views
 
 admin.autodiscover()
+admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
     # url(r'^grappelli/', include('grappelli.urls')),
@@ -22,6 +25,7 @@ urlpatterns = [
     url(r'^about$', TemplateView.as_view(template_name='home/about.html')),
     url(r'^accounts/profile/', RedirectView.as_view(url='/admin')),
     url(r'^$', RedirectView.as_view(url='/home', permanent=True)),
+    re_path(r'^api/', include('accounts.urls')),
 ]
 
 handler404 = views.error404

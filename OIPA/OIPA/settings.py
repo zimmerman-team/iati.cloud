@@ -19,6 +19,8 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 3000
 
 SECRET_KEY = env.get('OIPA_SECRET_KEY', 'PXwlMOpfNJTgIdQeH5zk39jKfUMZPOUK')
 
+OTP_TOTP_ISSUER = 'ZIMMERMAN'
+
 DATABASES = {
     'default': {
         'ENGINE': env.get(
@@ -141,6 +143,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'api.middleware.FileExportMiddleware',
@@ -190,7 +193,10 @@ INSTALLED_APPS = [
     'markdownify',
     'solr',
     'django_celery_beat',
-    'django_celery_results'
+    'django_celery_results',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'accounts'
 ]
 
 
