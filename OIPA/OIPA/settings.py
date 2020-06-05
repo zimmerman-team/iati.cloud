@@ -19,7 +19,7 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 3000
 
 SECRET_KEY = env.get('OIPA_SECRET_KEY', 'PXwlMOpfNJTgIdQeH5zk39jKfUMZPOUK')
 
-OTP_TOTP_ISSUER = 'ZIMMERMAN'
+OTP_TOTP_ISSUER = 'IATI Datastore'
 
 DATABASES = {
     'default': {
@@ -420,6 +420,8 @@ VALIDATION = {
         }
     }
 }
+
+ENABLE_2FA = True
 
 try:
     from .local_settings import *  # noqa: F401, F403

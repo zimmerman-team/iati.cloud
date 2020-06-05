@@ -10,7 +10,9 @@ from django.views.generic.base import RedirectView
 from OIPA import views
 
 admin.autodiscover()
-admin.site.__class__ = OTPAdminSite
+
+if settings.ENABLE_2FA:
+    admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
     # url(r'^grappelli/', include('grappelli.urls')),
