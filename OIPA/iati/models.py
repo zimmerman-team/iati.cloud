@@ -681,6 +681,12 @@ class ActivityRecipientCountry(models.Model):
         null=True,
         blank=True,
         default=None)
+    budget_value = models.DecimalField(
+        max_digits=255,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        default=None)
 
     def __unicode__(self,):
         return "name: %s" % self.country.name

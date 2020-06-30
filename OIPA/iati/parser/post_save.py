@@ -3,6 +3,7 @@ Methods triggered after activity has been parsed
 """
 
 from decimal import Decimal
+from django.db.models import Sum
 
 from iati import activity_search_indexes, models
 from iati.activity_aggregation_calculation import (
@@ -247,3 +248,15 @@ def set_sector_budget(activity):
                 sector=recipient_sector.sector,
                 percentage=recipient_sector.percentage
             ).save()
+
+
+def set_budget_for_individual_country(activity):
+    recipient_countries = activity.activityrecipientcountry_set
+    total_budget_annotation = recipient_countries.annotate(total_budget=Sum(
+        'activity__budget__value'))
+    for country in total_budget_annotation:
+        total_budget = country.total_budget
+        percentage = country.percentage
+        budget_for_country = total_budget * (percentage/100)
+        country.budget_value = budget_for_country
+        country.save()

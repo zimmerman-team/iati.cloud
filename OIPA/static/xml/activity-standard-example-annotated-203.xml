@@ -105,6 +105,7 @@
   <!--recipient-country starts-->
   <recipient-country code="AF" percentage="25" />
   <recipient-country code="AG" percentage="25" />
+     <recipient-country code="KE" percentage="30"/>
   <!--recipient-country ends-->
 
   <!--recipient-region starts-->
