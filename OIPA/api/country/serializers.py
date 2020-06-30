@@ -19,11 +19,27 @@ class CountrySerializer(DynamicFieldsModelSerializer):
     location = JSONField(source='center_longlat.json')
     polygon = JSONField()
     activities = serializers.SerializerMethodField()
+    budget_value = serializers.SerializerMethodField()
 
     def get_activities(self, obj):
         request = self.context.get('request')
         url = request.build_absolute_uri(reverse('activities:activity-list'))
         return url + '?recipient_country=' + obj.code
+
+    def get_budget_value(self, obj):
+        reporting_org_identifier = self.context.get(
+            'request').query_params.get(
+            'reporting_organisation_identifier', '')
+        recipient_countries = obj.activityrecipientcountry_set.all()
+        if reporting_org_identifier is not '':
+            requested_org_recipient_countries = recipient_countries.filter(
+                activity__reporting_organisations__ref=reporting_org_identifier)
+        else:
+            requested_org_recipient_countries = recipient_countries
+        total_budget = 0
+        for country in requested_org_recipient_countries:
+            total_budget = total_budget + country.budget_value
+        return total_budget
 
     class Meta:
         model = geodata.models.Country
@@ -46,4 +62,5 @@ class CountrySerializer(DynamicFieldsModelSerializer):
             'activities',
             'location',
             'polygon',
+            'budget_value'
         )
