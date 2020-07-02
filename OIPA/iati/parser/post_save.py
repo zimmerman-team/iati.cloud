@@ -257,6 +257,9 @@ def set_budget_for_individual_country(activity):
     for country in total_budget_annotation:
         total_budget = country.total_budget
         percentage = country.percentage
-        budget_for_country = total_budget * (percentage/100)
+        try:
+            budget_for_country = total_budget * (percentage/100)
+        except TypeError:
+            budget_for_country = None
         country.budget_value = budget_for_country
         country.save()

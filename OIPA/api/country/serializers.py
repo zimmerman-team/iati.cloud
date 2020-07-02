@@ -38,7 +38,10 @@ class CountrySerializer(DynamicFieldsModelSerializer):
             requested_org_recipient_countries = recipient_countries
         total_budget = 0
         for country in requested_org_recipient_countries:
-            total_budget = total_budget + country.budget_value
+            try:
+                total_budget = total_budget + country.budget_value
+            except TypeError:
+                pass
         return total_budget
 
     class Meta:
