@@ -112,22 +112,6 @@ class DynamicView(GenericAPIView):
             filter_fields.pop('q')
         if 'q_fields' in filter_fields:
             filter_fields.pop('q_fields')
-
-        for filter_field in filter_fields:
-            found = False
-            try:
-                declared_filters = self.filter_class.declared_filters
-
-                for key in declared_filters:
-                    if filter_field == key:
-                        found = True
-                if found is False:
-                    # make error in the code to fail
-                    # if input wrong filter name.
-                    setattr(self, 'filter_class', 'No Filter Class')
-                    break
-            except AttributeError:
-                pass
         fields = self._get_query_fields(*args, **kwargs)
         if not fields:
             fields = self.serializer_fields
@@ -144,9 +128,8 @@ class DynamicView(GenericAPIView):
             if hasattr(queryset, 'prefetch_%s' % field):
                 queryset = getattr(queryset, 'prefetch_%s' % field)()
 
-        queryset = super(DynamicView, self).filter_queryset(
-            queryset, *args, **kwargs
-        )
+        queryset = super(DynamicView, self).filter_queryset(queryset, *args, **kwargs)
+
 
         return queryset
 

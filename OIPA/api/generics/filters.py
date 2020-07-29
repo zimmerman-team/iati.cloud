@@ -109,13 +109,11 @@ class SearchFilter(filters.BaseFilterBackend):
 class CommaSeparatedCharFilter(CharFilter):
 
     def filter(self, qs, value):
-
         if value:
             value = value.split(',')
             value = reduce(reduce_comma, value, [])
 
         self.lookup_expr = 'in'
-
         return super(CommaSeparatedCharFilter, self).filter(qs, value)
 
 

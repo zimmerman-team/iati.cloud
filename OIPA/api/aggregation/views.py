@@ -71,7 +71,6 @@ class AggregationView(GenericAPIView):
             lambda x: x.query_param in aggregations,
             self.allowed_aggregations
         ))
-
         selected_orderings = orderings
 
         result = aggregate(
@@ -184,7 +183,6 @@ class GroupBy():
         given an array of result dictionaries, serialize the result[key]
         this mutates the input list #{l}
         """
-
         # TODO: Merge serializer results on queryset
         # TODO: instead of on the joined result - 2016-04-08
 
@@ -198,9 +196,12 @@ class GroupBy():
         field = self.get_fields()[0]
 
         values = map(lambda r: r[field], l)
-
-        queryset = self.queryset.all() \
-            .filter(**{"{}__in".format(self.serializer_fk): values})
+        try:
+            queryset = self.queryset.all() \
+                .filter(**{"{}__in".format(self.serializer_fk): values})
+        except:
+            # No filtering can be done on an item that is not an int() with base 10
+            queryset = self.queryset.all()
 
         data = self.serializer(
             queryset,
