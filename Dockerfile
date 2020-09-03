@@ -40,7 +40,8 @@ RUN apt-get -y install python-dev python-virtualenv postgresql-client \
 RUN mkdir /app
 RUN virtualenv /venv
 ENV PATH /venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-RUN pip install -U pip setuptools
+RUN pip install -U pip
+RUN pip install --upgrade 'setuptools<45.0.0'
 
 # Install Python dependencies
 ADD OIPA/requirements.txt /app/requirements.txt

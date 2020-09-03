@@ -1,6 +1,7 @@
 git+https://github.com/zimmerman-zimmerman/djorm-ext-pgfulltext.git
 git+https://github.com/zimmerman-zimmerman/fulltext.git
 ckanapi==4.1
+django-allauth==0.37.1
 django-cors-headers==2.1.0
 django-debug-toolbar==1.9.1
 django-extensions==1.9.9

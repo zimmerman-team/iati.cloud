@@ -4,7 +4,6 @@
 
 version: "2"
 services:
-
   postgres:
     image: mdillon/postgis:9.6
     ports:
@@ -29,7 +28,15 @@ services:
       service: oipa
     env_file:
       - etc/env/env.dev
-    command: ["/app/src/bin/wait-for-postgres.sh", "--", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+    command:
+      [
+        "/app/src/bin/docker-entrypoint.sh",
+        "--",
+        "python",
+        "manage.py",
+        "runserver",
+        "0.0.0.0:8000",
+      ]
     volumes:
       - .:/app/src
     depends_on:
@@ -42,7 +49,14 @@ services:
     extends:
       file: docker-compose.yml
       service: oipa-supervisor
-    command: ["/app/src/bin/wait-for-postgres.sh", "--", "python", "manage.py", "supervisor"]
+    command:
+      [
+        "/app/src/bin/wait-for-postgres.sh",
+        "--",
+        "python",
+        "manage.py",
+        "supervisor",
+      ]
     env_file:
       - etc/env/env.dev
     volumes:

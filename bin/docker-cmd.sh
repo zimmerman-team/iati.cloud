@@ -7,6 +7,13 @@ set -e
 # generate static files
 /app/src/OIPA/manage.py collectstatic --noinput
 
+# create superuser
+/app/src/OIPA/manage.py shell -c \
+"from django.contrib.auth.models import User; \
+User.objects.create_superuser('oipa', 'oipa', 'oipa') \
+if not User.objects.filter(username='oipa').exists() \
+else 'Superuser already exists . . .'"
+
 # run Django as a wsgi process
 /app/src/bin/wait-for-postgres.sh -- /venv/bin/uwsgi \
     --chdir=/app/src/OIPA \
