@@ -4,16 +4,20 @@ from api.activity.serializers import (
     ActivitySerializer, handle_errors, save_narratives
 )
 from api.codelist.serializers import (
-    CodelistSerializer, NarrativeSerializer, VocabularySerializer
+    AidTypeSerializer, CodelistSerializer, NarrativeSerializer,
+    VocabularySerializer
 )
 from api.country.serializers import CountrySerializer
-from api.generics.serializers import DynamicFieldsModelSerializer
+from api.generics.serializers import (
+    DynamicFieldsModelSerializer, ModelSerializerNoValidation
+)
 from api.generics.utils import get_or_raise
 from api.region.serializers import BasicRegionSerializer
 from api.sector.serializers import SectorSerializer
 from iati import models as iati_models
 from iati.parser import validators
 from iati.transaction import models
+from iati.transaction.models import TransactionAidType
 
 
 class TransactionProviderSerializer(serializers.ModelSerializer):
@@ -115,6 +119,16 @@ class TransactionRecipientRegionSerializer(DynamicFieldsModelSerializer):
         )
 
 
+class TransactionAidTypeSerializer(ModelSerializerNoValidation):
+    aid_type = AidTypeSerializer()
+
+    class Meta:
+        model = TransactionAidType
+        fields = (
+            'aid_type',
+        )
+
+
 class TransactionSerializer(DynamicFieldsModelSerializer):
     """
     Transaction serializer class
@@ -128,7 +142,11 @@ class TransactionSerializer(DynamicFieldsModelSerializer):
 
     transaction_date = serializers.CharField()
     value_date = serializers.CharField()
-    aid_type = CodelistSerializer()
+    aid_type = TransactionAidTypeSerializer(
+        many=True,
+        source='transactionaidtype_set',
+        read_only=True,
+        required=False,)
     disbursement_channel = CodelistSerializer()
     finance_type = CodelistSerializer()
     flow_type = CodelistSerializer()

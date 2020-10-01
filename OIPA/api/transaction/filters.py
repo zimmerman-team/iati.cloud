@@ -13,7 +13,7 @@ from iati.models import (
     Budget, DocumentLink, RelatedActivity, Result
 )
 from iati.transaction.models import (
-    Transaction, TransactionProvider, TransactionReceiver,
+    Transaction, TransactionAidType, TransactionProvider, TransactionReceiver,
     TransactionRecipientCountry, TransactionRecipientRegion, TransactionSector
 )
 
@@ -83,10 +83,16 @@ class TransactionFilter(FilterSet):
         fk='transaction',
     )
 
-    aid_type = CommaSeparatedCharFilter(
-        lookup_expr='exact',
-        field_name='aid_type',
-    )
+    # aid_type = CommaSeparatedCharFilter(
+    #     lookup_expr='exact',
+    #     field_name='aid_type',
+    # )
+
+    aid_type = ToManyFilter(
+        qs=TransactionAidType,
+        lookup_expr='in',
+        field_name='aid_type__code',
+        fk='transaction',)
 
     provider_organisation_primary_name = ToManyFilter(
         qs=TransactionProvider,
