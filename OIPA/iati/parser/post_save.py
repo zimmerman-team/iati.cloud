@@ -259,7 +259,8 @@ def set_budget_for_individual_country(activity):
         percentage = country.percentage
         try:
             budget_for_country = total_budget * (percentage/100)
-        except TypeError:
-            budget_for_country = None
+        except TypeError:  # arises when percentage is none
+            budget_for_country = total_budget  # if percentage is none,
+            # it is 100, that is equal to total_budget
         country.budget_value = budget_for_country
         country.save()
