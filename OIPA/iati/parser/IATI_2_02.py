@@ -4037,6 +4037,7 @@ class Parse(IatiParser):
         post_save.set_country_region_transaction(activity)
         post_save.set_sector_transaction(activity)
         post_save.set_sector_budget(activity)
+        post_save.set_budget_for_individual_country(activity)
 
     def post_save_file(self, dataset):
         """Perform all actions that need to happen after a single IATI

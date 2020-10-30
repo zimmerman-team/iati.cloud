@@ -147,8 +147,11 @@ class DatasetSyncer(object):
         if not len(dataset['resources']) or not dataset['organization']:
             return
 
-        publisher = Publisher.objects.get(
-            iati_id=dataset['organization']['id'])
+        try:
+            publisher = Publisher.objects.get(
+                iati_id=dataset['organization']['id'])
+        except Publisher.DoesNotExist:
+            publisher = None
 
         obj, created = Dataset.objects.update_or_create(
             iati_id=dataset['id'],
