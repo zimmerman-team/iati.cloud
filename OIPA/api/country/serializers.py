@@ -30,10 +30,12 @@ class CountrySerializer(DynamicFieldsModelSerializer):
         reporting_org_identifier = self.context.get(
             'request').query_params.get(
             'reporting_organisation_identifier', '')
+        reporting_org_identifier_list = reporting_org_identifier.split(',')
         recipient_countries = obj.activityrecipientcountry_set.all()
-        if reporting_org_identifier is not '':
+        if reporting_org_identifier_list != ['']:
             requested_org_recipient_countries = recipient_countries.filter(
-                activity__reporting_organisations__ref=reporting_org_identifier)
+                activity__reporting_organisations__ref__in
+                =reporting_org_identifier_list)
         else:
             requested_org_recipient_countries = recipient_countries
         total_budget = 0
