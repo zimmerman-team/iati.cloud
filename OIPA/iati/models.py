@@ -1392,6 +1392,58 @@ class BudgetSector(models.Model):
         return self.budget.activity
 
 
+class BudgetRecipientCountry(models.Model):
+    budget = models.ForeignKey(
+        Budget,
+        on_delete=models.CASCADE,
+        # related_name="recipient_country"
+    )
+
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.CASCADE)
+
+    percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2)
+
+    def __unicode__(self, ):
+        return "%s - %s" % (self.budget.id, self.country)
+
+    def get_publisher(self):
+        return self.budget.activity.publisher
+
+
+class BudgetRecipientRegion(models.Model):
+    budget = models.ForeignKey(
+        Budget,
+        on_delete=models.CASCADE,
+    )
+
+    region = models.ForeignKey(
+        Region,
+        on_delete=models.CASCADE)
+
+    vocabulary = models.ForeignKey(
+        RegionVocabulary,
+        null=True,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE)
+
+    vocabulary_uri = models.URLField(null=True, blank=True)
+
+    percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2)
+
+    def __unicode__(self, ):
+        return "%s - %s" % (self.budget.id, self.region)
+
+    def get_publisher(self):
+        return self.budget.activity.publisher
+
+
 class PlannedDisbursement(models.Model):
 
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)

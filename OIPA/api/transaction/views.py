@@ -502,17 +502,17 @@ class TransactionAggregation(AggregationView):
                     organisation__primary_name",
             renamed_name_search_field="reporting_organisation_name"
         ),
-        GroupBy(
-            query_param="participating_organisation",
-            fields=("activity__participating_organisations__primary_name",
-                    "activity__participating_organisations__normalized_ref"),
-            renamed_fields=("participating_organisation",
-                            "participating_organisation_ref"),
-            queryset=ActivityParticipatingOrganisation.objects.all(),
-            name_search_field="activity__participating_organisations\
-                    __primary_name",
-            renamed_name_search_field="participating_organisation_name"
-        ),
+        # GroupBy(
+        #     query_param="participating_organisation",
+        #     fields=("activity__participating_organisations__primary_name",
+        #             "activity__participating_organisations__normalized_ref"),
+        #     renamed_fields=("participating_organisation",
+        #                     "participating_organisation_ref"),
+        #     queryset=ActivityParticipatingOrganisation.objects.all(),
+        #     name_search_field="activity__participating_organisations\
+        #             __primary_name",
+        #     renamed_name_search_field="participating_organisation_name"
+        # ),
         GroupBy(
             query_param="provider_org",
             fields=("provider_organisation__primary_name"),

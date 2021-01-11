@@ -12,7 +12,7 @@ from api.budget.serializers import BudgetSerializer
 from api.country.serializers import CountrySerializer
 from api.generics.filters import SearchFilter
 from api.generics.views import DynamicListView
-from api.organisation.serializers import OrganisationSerializer
+from api.organisation.serializers import OrganisationAggregationSerializer
 from api.region.serializers import RegionSerializer
 from api.sector.serializers import SectorSerializer
 from geodata.models import Country, Region
@@ -54,13 +54,22 @@ def annotate_currency(query_params, groupings):
     param_additions = []
 
     for param in query_params:
-        if param == 'sector':
+        if param == 'recipient_country':
+            param_additions.append('budgetrecipientcountry__percentage')
+        elif param == 'recipient_region':
+            param_additions.append('budgetrecipientregion__percentage')
+        elif param == 'sector':
             param_additions.append('budgetsector__percentage')
 
     grouping_additions = []
 
     for grouping in groupings:
-        if grouping.query_param == 'sector':
+        if grouping.query_param == 'recipient_country':
+            grouping_additions.append(
+                'budgetrecipientcountry__percentage')
+        elif grouping.query_param == 'recipient_region':
+            grouping_additions.append('budgetrecipientregion__percentage')
+        elif grouping.query_param == 'sector':
             grouping_additions.append('budgetsector__percentage')
 
     additions = list(set(param_additions).union(grouping_additions))
@@ -145,12 +154,12 @@ class BudgetAggregations(AggregationView):
     allowed_groupings = (
         GroupBy(
             query_param="recipient_country",
-            fields="activity__recipient_country",
+            fields="budgetrecipientcountry__country",
             renamed_fields="recipient_country",
             queryset=Country.objects.all(),
             serializer=CountrySerializer,
             serializer_fields=('url', 'code', 'name', 'location', 'region'),
-            name_search_field='activity__recipient_country__name',
+            name_search_field='budgetrecipientcountry_country__name',
             renamed_name_search_field='recipient_country_name',
         ),
         GroupBy(
@@ -184,22 +193,22 @@ class BudgetAggregations(AggregationView):
             fields="activity__reporting_organisations__organisation__id",
             renamed_fields="reporting_organisation",
             queryset=Organisation.objects.all(),
-            serializer=OrganisationSerializer,
+            serializer=OrganisationAggregationSerializer,
             serializer_main_field='id',
             name_search_field=  # NOQA: E251
             "activity__reporting_organisations__organisation__primary_name",
             renamed_name_search_field="reporting_organisation_name"
         ),
-        GroupBy(
-            query_param="participating_organisation",
-            fields="activity__participating_organisations__ref",
-            renamed_fields="participating_organisation",
-            queryset=ActivityParticipatingOrganisation.objects.all(),
-
-            name_search_field=  # NOQA: E251
-            "activity__participating_organisations__ref",
-            renamed_name_search_field="participating_organisation_name"
-        ),
+        # GroupBy(
+        #     query_param="participating_organisation",
+        #     fields="activity__participating_organisations__ref",
+        #     renamed_fields="participating_organisation",
+        #     queryset=ActivityParticipatingOrganisation.objects.all(),
+        #
+        #     name_search_field=  # NOQA: E251
+        #     "activity__participating_organisations__ref",
+        #     renamed_name_search_field="participating_organisation_name"
+        # ),
         GroupBy(
             query_param="participating_organisation_type",
             fields="activity__participating_organisations__type",

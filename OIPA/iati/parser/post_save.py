@@ -155,6 +155,48 @@ def set_country_region_transaction(activity):
                 trr.save()
 
 
+def set_country_region_budget(activity):
+    """
+    To add budget recipient country/region from activity-recipient
+    country/region to make it easy to calculate aggregation value according
+    to activity recipient country/region percentage.
+    """
+    if not activity.budget_set.count():
+        return False
+
+    countries = activity.activityrecipientcountry_set.all()
+    regions = activity.activityrecipientregion_set.all()
+
+    # check if percentages are not set, then divide equally
+    if len(countries.filter(percentage=None))\
+            or len(regions.filter(percentage=None)):
+        total_count = countries.count() + regions.count()
+        percentage = Decimal(100) / Decimal(total_count)
+        for recipient_country in countries:
+            recipient_country.percentage = percentage
+        for recipient_region in regions:
+            recipient_region.percentage = percentage
+
+    # create BudgetRecipientCountry/Region for each budget, for
+    # each country/region
+    for b in activity.budget_set.all():
+        for recipient_country in countries:
+            brc = models.BudgetRecipientCountry(
+                budget=b,
+                country=recipient_country.country,
+                percentage=recipient_country.percentage,
+            )
+            brc.save()
+
+        for recipient_region in regions:
+            brr = models.BudgetRecipientRegion(
+                budget=b,
+                region=recipient_region.region,
+                percentage=recipient_region.percentage,
+            )
+            brr.save()
+
+
 def set_sector_transaction(activity):
     """
     IATI business rule: If this element is used then ALL transaction elements
