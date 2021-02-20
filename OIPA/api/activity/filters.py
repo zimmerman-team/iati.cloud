@@ -25,6 +25,12 @@ from iati.models import (
 from iati.transaction.models import Transaction
 from iati_synchroniser.models import Dataset, Publisher
 
+# ဒီ filter file က activity/transaction/budget တွေကို တပြိုင်နက်  simultaneous
+# filters လုပ်လို့ရတဲ့ filter တွေ ပါတယ်။ အခု အဲ့ဒီ filter တွေက
+# အလုပ်မဖြစ်ဘူး။ 502 error ဖြစ်နေတယ်။ server hang သွားတယ်။ အဲ့ဒါကြောင့်
+# အဲ့ဒီ feature ကိုပြန်ဖြုတ်မယ်။ ဒါပေမယ့် လိုရမယ်ရအနေနဲ့ ဒီ branch
+# လုပ်ပြီးသိမ်းထားတာ။
+
 
 class ActivityFilter(TogetherFilterSet):
 
