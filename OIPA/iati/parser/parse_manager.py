@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils.encoding import smart_text
 from lxml import etree
 
+
 # from iati.filegrabber import FileGrabber
 from iati.parser import schema_validators
 from iati.parser.IATI_1_03 import Parse as IATI_103_Parser
@@ -35,12 +36,15 @@ class ParseManager():
         if settings.IATI_PARSER_DISABLED:
             raise ParserDisabledError(
                 "The parser is disabled on this instance of OIPA")
-
+        print("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
         self.dataset = dataset
         self.url = dataset.source_url
         self.force_reparse = force_reparse
         self.hash_changed = True
         self.valid_dataset = True
+        if len(self.dataset) == 0:
+            raise Exception("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+
 
         if root is not None:
             self.root = root
@@ -66,7 +70,7 @@ class ParseManager():
                     is_http_error=False,
                     error_detail=str(error)
                 )
-                datasetFailedPickup.save()
+                datasetFailedPickup.save() 
         except requests.exceptions.Timeout:
             try:
                 response = requests.get(self.url, verify=False, timeout=30)
@@ -94,8 +98,31 @@ class ParseManager():
                 error_detail=error.response.reason
             )
             datasetFailedPickup.save()
-        # We do not add a generic exception, because that would mean that
-        # an internal datastore error would show up in the API.
+        except requests.exceptions.RetryError as error:
+            datasetFailedPickup = DatasetFailedPickup(
+                dataset=self.dataset,
+                is_http_error=True,
+                status_code=error.response.status_code,
+                error_detail=error.response.reason
+            )  
+            #This loop should catch all errors we didn't catch earlier, 
+            #we can then use the errors we catched with this loop to figure out what the problem is
+        except requests.exceptions.ConnectionError as error:
+            datasetFailedPickup = DatasetFailedPickup(
+                dataset=self.dataset,
+                is_http_error=True,
+                status_code=error.response.status_code,
+                error_detail=error.response.reason
+            )
+            datasetFailedPickup.save() 
+        except requests.exceptions.RequestException as error:
+            datasetFailedPickup = DatasetFailedPickup(
+                dataset=self.dataset,
+                is_http_error=True,
+                status_code=error.response.status_code,
+                error_detail=error.response.reason
+            )
+            datasetFailedPickup.save()
         finally:
             pass
 
